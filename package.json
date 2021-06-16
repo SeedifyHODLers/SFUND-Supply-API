@@ -22,9 +22,9 @@
     "typescript": "^4.3.2"
   },
   "scripts": {
-    "start": "tsc && node --unhandled-rejections=strict ./dist/app.js",
-    "tsc": "./node_modules/typescript/bin/tsc",
-    "debug": "export DEBUG=* && npm run start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/app.js",
+    "postinstall": "tsc",
+    "watch-node": "nodemon dist/app.js",
+    "watch-ts": "tsc -w"
   }
 }
