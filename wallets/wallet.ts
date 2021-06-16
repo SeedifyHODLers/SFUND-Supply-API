@@ -22,9 +22,14 @@ export class Wallet {
   walletsfundsupply: number = 0;
   harvestTopic: string = "0x933735aa8de6d7547d0126171b2f31b9c34dd00f3ecd4be85a0ba047db4fafef";
   startBlock: number = 6000000;
-  bscscanApi = new BscscanService("https://api.bscscan.com/api", "WRS8IF8SBV2Q6MHN3U4Y5W7HFZS3K91XVV")
+  bscScanApiRoute = "https://api.bscscan.com/api";
+  private _bscscanApi;
 
-  constructor(address: string) {
+  constructor(address: string, apiKey: string | undefined) {
+    if (typeof apiKey == 'undefined') {
+      throw new Error("ApiKey is needed in tk header");
+    }
+    this._bscscanApi = new BscscanService("https://api.bscscan.com/api", apiKey);
     if (this.isValidAddress(address)) {
       this._address = address;
     } else {
@@ -51,13 +56,6 @@ export class Wallet {
     };
   }
 
-  getTotalSfundAmount(): number {
-    console.log("farming : " + this.farmingTotalSfund);
-    console.log("staked : " + this.stakedsfundamount);
-    console.log("wallet : " + this.walletsfundsupply);
-    return this.farmingTotalSfund + this.stakedsfundamount + this.walletsfundsupply;
-  }
-
   getTokenInLp(lpNumber: number, tokenTotalAmount: number, lpTotalSupply: number): number {
     return lpNumber * (tokenTotalAmount / lpTotalSupply);
   }
@@ -66,10 +64,10 @@ export class Wallet {
     return parseFloat((value / 1000000000000000000).toFixed(2));
   }
 
-  async getWalletInfos(): Promise<void> {
+  async getWalletInfos(): Promise<void> | never {
     this.farmingTotalSfund = 0;
     this.farmingTotalBnb = 0;
-    const tokenTxList: TokenTrx[] = await this.getTokenTxList();
+    const tokenTxList: TokenTrx[] | never = await this.getTokenTxList();
     for (const lp of this._lpList) {
       lp.lpFound = this.threatTokenTx(tokenTxList, lp.address, lp.farmAddress);
       if (lp.lpFound > 0) {
@@ -83,12 +81,12 @@ export class Wallet {
     this.walletsfundsupply = this.amountdecimal(await this.getContractBalance(Wallet.sfundContractAddress, this._address));
   }
 
-  async getTokenTxList(): Promise<TokenTrx[]> {
-    return this.bscscanApi.get("account", "tokentx", { key: "address", value: this._address }, { key: "startblock", value: String(this.startBlock) }, { key: "sort", value: "desc" })
+  async getTokenTxList(): Promise<TokenTrx[]> | never {
+    return this._bscscanApi.get("account", "tokentx", { key: "address", value: this._address }, { key: "startblock", value: String(this.startBlock) }, { key: "sort", value: "desc" })
   }
 
   // used to compute all transactions about one contract, simply + when trx "to" and - when trx "from"
-  threatTokenTx(tokenTxList: TokenTrx[], tokenContractAddress: string, stakingContractAddress: string, trxToIgnore: string[] = []) {
+  threatTokenTx(tokenTxList: TokenTrx[], tokenContractAddress: string, stakingContractAddress: string, trxToIgnore: string[] = []): number | never {
     let lpfound = 0;
     let lastHash = "";
     let ignore = false;
@@ -114,22 +112,22 @@ export class Wallet {
   compareIgnoreCase = (s1: string, s2: string): boolean => s1.toUpperCase() == s2.toUpperCase()
 
   async getTokenSupply(contract: string): Promise<number> | never {
-    return this.bscscanApi.get("stats", "tokensupply", { key: "contractaddress", value: contract })
+    return this._bscscanApi.get("stats", "tokensupply", { key: "contractaddress", value: contract })
   }
 
   async getContractBalance(contract: string, addr: string): Promise<number> | never {
-    const amount: number | string = await this.bscscanApi.get("account", "tokenbalance", { key: "contractaddress", value: contract }, { key: "address", value: addr }, { key: "tag", value: "latest" })
+    const amount: number | string = await this._bscscanApi.get("account", "tokenbalance", { key: "contractaddress", value: contract }, { key: "address", value: addr }, { key: "tag", value: "latest" })
     return typeof amount == 'string' ? parseInt(amount) : amount;
   }
 
   // We need to identify harvest trx to ignore it (only usefull for staking pool)
-  async getHarvestTrx(): Promise<any> {
-    return this.bscscanApi.get("logs", "getLogs", { key: "fromBlock", value: String(this.startBlock) },
+  async getHarvestTrx(): Promise<any> | never {
+    return this._bscscanApi.get("logs", "getLogs", { key: "fromBlock", value: String(this.startBlock) },
       { key: "toBlock", value: "latest" }, { key: "address", value: this.tosdisSfundStakingAddress },
       { key: "topic0", value: this.harvestTopic }, { key: "topic1", value: "0x000000000000000000000000" + this._address.substring(2) })
   }
 
-  async fetchInfos(lp: LiquidityProvider): Promise<void> {
+  async fetchInfos(lp: LiquidityProvider): Promise<void> | never {
     lp.totalSupply = await this.getTokenSupply(lp.address);
     lp.bnbAmount = await this.getContractBalance(Wallet.bnbContractAddress, lp.address);
     lp.sfundAmount = await this.getContractBalance(Wallet.sfundContractAddress, lp.address);

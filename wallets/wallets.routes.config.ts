@@ -12,8 +12,8 @@ export class WalletsRoutes extends CommonRoutesConfig {
     this.app.route(`/wallet/:addr`)
       .get((req: express.Request, res: express.Response) => {
         try {
-          const wallet = new Wallet(req.params.addr);
-          wallet.getWalletInfos().then(() => res.status(200).send(wallet.getInfos()))
+          const wallet = new Wallet(req.params.addr, req.headers.tk);
+          wallet.getWalletInfos().then(() => res.status(200).send(wallet.getInfos())).catch((e) => res.status(400).send({ error: e.message }));
         }
         catch (e) {
           res.status(400).send({ error: e.message });

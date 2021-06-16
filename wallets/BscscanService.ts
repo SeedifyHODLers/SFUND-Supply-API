@@ -7,13 +7,11 @@ export class BscscanService extends HttpClient {
   }
 
   async get(module: string, action: string, ...more: { key: string, value: string }[]): Promise<any> | never {
-    console.log("new call " + new Date().getTime());
     await this.canCallApi();
     let uri = `?module=${module}&action=${action}`
     more.forEach((entry) => { uri += `&${entry.key}=${entry.value}` })
     uri += '&apiKey=' + this._apiKey
-    console.log("call to : " + uri);
-    return this.instance.get(uri).then((response: any) => { return response.result }).catch((error: any) => { console.log(error); throw new Error(error) })
+    return this.instance.get(uri).then((response: any) => { if (response.message == 'NOTOK') { throw new Error(response.result) } return response.result })
   }
 
   // little bridle for api call (limited to 5 calls / sec / IP)
