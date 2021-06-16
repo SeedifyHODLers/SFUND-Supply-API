@@ -1,4 +1,4 @@
-import { HttpClient } from './httpClient';
+import { HttpClient } from './HttpClient';
 export class BscscanService extends HttpClient {
   calls: Date[] = [];
 
