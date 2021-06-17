@@ -1,5 +1,6 @@
 import express from 'express';
 import { CommonRoutesConfig } from '../common/common.routes.config';
+import { ConfigError } from '../ConfigError';
 import { Wallet } from './wallet';
 
 export class WalletsRoutes extends CommonRoutesConfig {
@@ -16,7 +17,13 @@ export class WalletsRoutes extends CommonRoutesConfig {
           wallet.getWalletInfos().then(() => res.status(200).send(wallet.getInfos())).catch((e) => res.status(400).send({ error: e.message }));
         }
         catch (e) {
-          res.status(400).send({ error: e.message });
+          if (e instanceof ConfigError) {
+            res.status(e.code).send({ error: "Internal server error" });
+          }
+          else {
+            console.log(e.message);
+            res.status(400).send({ error: e.message });
+          }
         }
       })
 

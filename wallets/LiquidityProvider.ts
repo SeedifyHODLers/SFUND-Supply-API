@@ -1,3 +1,5 @@
+import { ConfigError } from "../ConfigError";
+
 export class LiquidityProvider {
 
   private _address: string;
@@ -7,8 +9,11 @@ export class LiquidityProvider {
   private _bnbAmount: number = 0;
   private _totalSupply: number = 0;
 
-  constructor(address: string, farmAddress: string) {
+  constructor(address: string, farmAddress: string | undefined) {
     this._address = address;
+    if (typeof farmAddress == "undefined") {
+      throw new ConfigError(`Farming address for ${address} is not defined`);
+    }
     this._farmAddress = farmAddress;
   }
 

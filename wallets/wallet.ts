@@ -6,30 +6,33 @@ export class Wallet {
   private _address: string;
   private _lpList = [
     // Pancake Swap
-    new LiquidityProvider("0x74fA517715C4ec65EF01d55ad5335f90dce7CC87", "0x0EF7Bd72eca5e2562b87FDf7E83dD30f81A6670B"),
+    new LiquidityProvider("0x74fA517715C4ec65EF01d55ad5335f90dce7CC87", process.env.PANCAKE_FARM),
     // Bakery Swap
-    new LiquidityProvider("0x782f3f0d2b321D5aB7F15cd1665B95EC479Dcfa5", "0x8186aC36402645cC0B8e913CE4912fB0790bC9e6"),
+    new LiquidityProvider("0x782f3f0d2b321D5aB7F15cd1665B95EC479Dcfa5", process.env.BAKERY_FARM),
     // Jul Swap
-    new LiquidityProvider("0xF94FD45b0c7F2b305040CeA4958A9Ab8Ee73e1F4", "0x212a6497CFC9d41B0acdacc340D9993e619829C1")
+    new LiquidityProvider("0xF94FD45b0c7F2b305040CeA4958A9Ab8Ee73e1F4", process.env.JUL_FARM)
   ]
   farmingTotalSfund: number = 0;
   farmingTotalBnb: number = 0;
   onlyHarvest: string = "0x0000000000000000000000000000000000000000000000000000000000000000";
   static sfundContractAddress: string = "0x477bc8d23c634c154061869478bce96be6045d12";
   static bnbContractAddress: string = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
-  tosdisSfundStakingAddress: string = "0xF17C06eb029F6Ab934E09CA4766eC373A78081B3";
   stakedsfundamount: number = 0;
   walletsfundsupply: number = 0;
   harvestTopic: string = "0x933735aa8de6d7547d0126171b2f31b9c34dd00f3ecd4be85a0ba047db4fafef";
-  startBlock: number = 6000000;
+  startBlock: number;
   bscScanApiRoute = "https://api.bscscan.com/api";
   private _bscscanApi;
+  tosdisSfundStakingAddress: string;
 
   constructor(address: string, apiKey: string | undefined) {
-    if (typeof apiKey == 'undefined') {
+    if (typeof apiKey == 'undefined' || typeof process.env.SFUND_STAKING == "undefined" || typeof process.env.START_BLOCK == "undefined") {
       throw new Error("ApiKey is needed in tk header");
     }
+    this.tosdisSfundStakingAddress = process.env.SFUND_STAKING;
+    this.startBlock = parseInt(process.env.START_BLOCK);
     this._bscscanApi = new BscscanService("https://api.bscscan.com/api", apiKey);
+
     if (this.isValidAddress(address)) {
       this._address = address;
     } else {
