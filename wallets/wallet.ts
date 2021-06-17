@@ -79,6 +79,8 @@ export class Wallet {
         this.farmingTotalBnb += ((lp.bnbAmount / lp.totalSupply) * lp.lpFound);
       }
     }
+    this.farmingTotalSfund = parseFloat(this.farmingTotalSfund.toFixed(2));
+    this.farmingTotalBnb = parseFloat(this.farmingTotalBnb.toFixed(2));
     const trxToIgnore = await this.getHarvestTrx().then(log => log.filter((trx: { data: string; }) => trx.data.substring(0, 66) == this.onlyHarvest).map((trx: { transactionHash: string; }) => trx.transactionHash));
     this.stakedsfundamount = this.threatTokenTx(tokenTxList, Wallet.sfundContractAddress, this.tosdisSfundStakingAddress, trxToIgnore);
     this.walletsfundsupply = this.amountdecimal(await this.getContractBalance(Wallet.sfundContractAddress, this._address));
