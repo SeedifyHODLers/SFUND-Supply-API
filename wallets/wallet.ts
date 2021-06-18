@@ -6,11 +6,11 @@ export class Wallet {
   private _address: string;
   private _lpList = [
     // Pancake Swap
-    new LiquidityProvider("0x74fA517715C4ec65EF01d55ad5335f90dce7CC87", process.env.PANCAKE_FARM),
+    new LiquidityProvider("PancakeSwap", "0x74fA517715C4ec65EF01d55ad5335f90dce7CC87", process.env.PANCAKE_FARM),
     // Bakery Swap
-    new LiquidityProvider("0x782f3f0d2b321D5aB7F15cd1665B95EC479Dcfa5", process.env.BAKERY_FARM),
+    new LiquidityProvider("BakerySwap", "0x782f3f0d2b321D5aB7F15cd1665B95EC479Dcfa5", process.env.BAKERY_FARM),
     // Jul Swap
-    new LiquidityProvider("0xF94FD45b0c7F2b305040CeA4958A9Ab8Ee73e1F4", process.env.JUL_FARM)
+    new LiquidityProvider("JulSwap", "0xF94FD45b0c7F2b305040CeA4958A9Ab8Ee73e1F4", process.env.JUL_FARM)
   ]
   farmingTotalSfund: number = 0;
   farmingTotalBnb: number = 0;
@@ -40,27 +40,29 @@ export class Wallet {
     }
   }
 
-  getInfos(): any {
-    return {
-      total: {
-        sfund: this.farmingTotalSfund + this.stakedsfundamount + this.walletsfundsupply,
-        bnb: this.farmingTotalBnb
-      },
-      staked: {
-        sfund: this.stakedsfundamount
-      },
-      farm: {
-        sfund: this.farmingTotalSfund,
-        bnb: this.farmingTotalBnb
-      },
-      wallet: {
-        sfund: this.walletsfundsupply
-      }
-    };
+  getInfos(): JSON {
+    let json = `{
+  "total": {
+    "sfund": ${parseFloat((this.farmingTotalSfund + this.stakedsfundamount + this.walletsfundsupply).toFixed(2))},
+    "bnb": ${this.farmingTotalBnb}
+  },
+  "staked": {
+    "sfund": ${this.stakedsfundamount}
+  },
+  "farm": {
+    "total": {
+      "sfund": ${this.farmingTotalSfund},
+      "bnb": ${this.farmingTotalBnb}
+    },
+    "details": [`;
+    this._lpList.filter((lp: LiquidityProvider) => lp.lpFound > 0)
+      .forEach((lp: LiquidityProvider, index: number) => { json += (index > 0 ? "," : "") + `{"name": "${lp.name}", "lp": ${lp.lpFound},"sfund": ${lp.sfundAmount},"bnb": ${lp.bnbAmount}}` })
+    json += `]},
+  "wallet": {
+    "sfund": ${this.walletsfundsupply}
   }
-
-  getTokenInLp(lpNumber: number, tokenTotalAmount: number, lpTotalSupply: number): number {
-    return lpNumber * (tokenTotalAmount / lpTotalSupply);
+}`;
+    return JSON.parse(json);
   }
 
   amountdecimal(value: number) {
@@ -75,12 +77,10 @@ export class Wallet {
       lp.lpFound = this.threatTokenTx(tokenTxList, lp.address, lp.farmAddress);
       if (lp.lpFound > 0) {
         await this.fetchInfos(lp);
-        this.farmingTotalSfund += ((lp.sfundAmount / lp.totalSupply) * lp.lpFound);
-        this.farmingTotalBnb += ((lp.bnbAmount / lp.totalSupply) * lp.lpFound);
+        this.farmingTotalSfund += lp.sfundAmount;
+        this.farmingTotalBnb += lp.bnbAmount;
       }
     }
-    this.farmingTotalSfund = parseFloat(this.farmingTotalSfund.toFixed(2));
-    this.farmingTotalBnb = parseFloat(this.farmingTotalBnb.toFixed(2));
     const trxToIgnore = await this.getHarvestTrx().then(log => log.filter((trx: { data: string; }) => trx.data.substring(0, 66) == this.onlyHarvest).map((trx: { transactionHash: string; }) => trx.transactionHash));
     this.stakedsfundamount = this.threatTokenTx(tokenTxList, Wallet.sfundContractAddress, this.tosdisSfundStakingAddress, trxToIgnore);
     this.walletsfundsupply = this.amountdecimal(await this.getContractBalance(Wallet.sfundContractAddress, this._address));
@@ -134,7 +134,7 @@ export class Wallet {
 
   async fetchInfos(lp: LiquidityProvider): Promise<void> | never {
     lp.totalSupply = await this.getTokenSupply(lp.address);
-    lp.bnbAmount = await this.getContractBalance(Wallet.bnbContractAddress, lp.address);
-    lp.sfundAmount = await this.getContractBalance(Wallet.sfundContractAddress, lp.address);
+    lp.bnbTotalAmount = await this.getContractBalance(Wallet.bnbContractAddress, lp.address);
+    lp.sfundTotalAmount = await this.getContractBalance(Wallet.sfundContractAddress, lp.address);
   }
 }

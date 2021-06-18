@@ -5,11 +5,13 @@ export class LiquidityProvider {
   private _address: string;
   private _farmAddress: string;
   private _lpFound: number = 0;
-  private _sfundAmount: number = 0;
-  private _bnbAmount: number = 0;
+  private _sfundTotalAmount: number = 0;
+  private _bnbTotalAmount: number = 0;
   private _totalSupply: number = 0;
+  private _name: string;
 
-  constructor(address: string, farmAddress: string | undefined) {
+  constructor(name: string, address: string, farmAddress: string | undefined) {
+    this._name = name;
     this._address = address;
     if (typeof farmAddress == "undefined") {
       throw new ConfigError(`Farming address for ${address} is not defined`);
@@ -17,18 +19,26 @@ export class LiquidityProvider {
     this._farmAddress = farmAddress;
   }
 
-  public get bnbAmount(): number {
-    return this._bnbAmount;
+  public get name(): string {
+    return this._name;
   }
-  public set bnbAmount(value: number) {
-    this._bnbAmount = value;
+
+  public get bnbTotalAmount(): number {
+    return this._bnbTotalAmount;
   }
+
+  public set bnbTotalAmount(value: number) {
+    this._bnbTotalAmount = value;
+  }
+
   public get totalSupply(): number {
     return this._totalSupply;
   }
+
   public set totalSupply(value: number) {
     this._totalSupply = value;
   }
+
   public get address(): string {
     return this._address;
   }
@@ -44,10 +54,20 @@ export class LiquidityProvider {
   public get farmAddress(): string {
     return this._farmAddress;
   }
-  public get sfundAmount(): number {
-    return this._sfundAmount;
+
+  public get sfundTotalAmount(): number {
+    return this._sfundTotalAmount;
   }
-  public set sfundAmount(value: number) {
-    this._sfundAmount = value;
+
+  public set sfundTotalAmount(value: number) {
+    this._sfundTotalAmount = value;
+  }
+
+  public get sfundAmount(): number {
+    return parseFloat((this._lpFound * (this._sfundTotalAmount / this._totalSupply)).toFixed(2));
+  }
+
+  public get bnbAmount(): number {
+    return parseFloat((this._lpFound * (this._bnbTotalAmount / this._totalSupply)).toFixed(2));
   }
 }
