@@ -5,7 +5,7 @@ import * as expressWinston from 'express-winston';
 import * as http from 'http';
 import * as winston from 'winston';
 import { CommonRoutesConfig } from './common/common.routes.config';
-import { WalletsRoutes } from './wallets/wallets.routes.config';
+import { WalletsRoutes } from './Wallets/wallets.routes.config';
 
 
 const app: express.Application = express();
