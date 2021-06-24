@@ -64,4 +64,23 @@ export class LPToken extends LPTokenContract {
   public get decimals(): number {
     return this._decimals
   }
+
+  public infosAsJson(): JSON {
+    return JSON.parse(JSON.stringify(
+      {
+        "totalSupply": this._totalSupply / this._decimals,
+        "tokens":
+          [
+            {
+              "symbol": this._token0.symbol,
+              "amount": this._reserves._reserve0 / this._token0.decimals
+            },
+            {
+              "symbol": this._token1.symbol,
+              "amount": this._reserves._reserve1 / this._token1.decimals
+            }
+          ]
+      }
+    ))
+  }
 }

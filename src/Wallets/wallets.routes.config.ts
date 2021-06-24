@@ -2,6 +2,7 @@ import express from 'express';
 import Web3 from 'web3';
 import { CommonRoutesConfig } from '../common/common.routes.config';
 import { ConfigError } from '../ConfigError';
+import { LPToken } from './LPToken';
 import { Wallet } from './Wallet';
 
 export class WalletsRoutes extends CommonRoutesConfig {
@@ -21,6 +22,35 @@ export class WalletsRoutes extends CommonRoutesConfig {
               const wallet = new Wallet(web3, stakingPoolAddress, req.params.addr)
               await wallet.fetchInfos()
               res.status(200).send(wallet.infosAsJson());
+            }
+            else {
+              throw new Error("Invalid address")
+            }
+          }
+          else {
+            throw new ConfigError("Web3 connection not listening")
+          }
+        }
+        catch (e) {
+          console.log(e.message);
+          if (e instanceof ConfigError) {
+            res.status(e.code).send({ error: "Internal server error" });
+          }
+          else {
+            res.status(400).send({ error: e.message });
+          }
+        }
+      })
+    this.app.route(`/lp/:addr`)
+      .get(async (req: express.Request, res: express.Response) => {
+        try {
+          const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443"));
+          const isListening = await web3.eth.net.isListening()
+          if (isListening) {
+            if (web3.utils.isAddress(req.params.addr)) {
+              const lpToken = new LPToken(web3, req.params.addr)
+              await lpToken.init()
+              res.status(200).send(lpToken.infosAsJson());
             }
             else {
               throw new Error("Invalid address")
