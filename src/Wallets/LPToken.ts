@@ -17,19 +17,19 @@ export class LPToken extends LPTokenContract {
     works.push(this.getReserves().then(reserves => this._reserves = reserves))
     works.push(this.getTotalSupply().then(totalSupply => this._totalSupply = totalSupply))
     const tokenAddress0 = await this.getToken0();
-    const token0 = TokenManager.get(tokenAddress0)
+    const token0 = TokenManager.getToken(tokenAddress0)
     if (token0 === undefined) {
       this._token0 = new Token(this.web3, tokenAddress0);
-      works.push(this._token0.init().then(() => TokenManager.add(this._token0)))
+      works.push(this._token0.init().then(() => TokenManager.addToken(this._token0)))
     }
     else {
       this._token0 = token0;
     }
     const tokenAddress1 = await this.getToken1();
-    const token1 = TokenManager.get(tokenAddress1)
+    const token1 = TokenManager.getToken(tokenAddress1)
     if (token1 === undefined) {
       this._token1 = new Token(this.web3, tokenAddress1);
-      works.push(this._token1.init().then(() => TokenManager.add(this._token1)))
+      works.push(this._token1.init().then(() => TokenManager.addToken(this._token1)))
     }
     else {
       this._token1 = token1;

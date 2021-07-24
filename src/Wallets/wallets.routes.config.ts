@@ -6,20 +6,21 @@ import { LPToken } from './LPToken';
 import { Wallet } from './Wallet';
 
 export class WalletsRoutes extends CommonRoutesConfig {
+  private _web3: Web3;
   constructor(app: express.Application) {
     super(app, 'WalletsRoutes');
+    this._web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443"));
   }
 
   configureRoutes() {
     this.app.route(`/wallet/:addr`)
       .get(async (req: express.Request, res: express.Response) => {
         try {
-          const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443"));
-          const isListening = await web3.eth.net.isListening()
+          const isListening = await this._web3.eth.net.isListening()
           if (isListening) {
-            if (web3.utils.isAddress(req.params.addr)) {
+            if (this._web3.utils.isAddress(req.params.addr)) {
               const stakingPoolAddress: string[] = [process.env.SFUND_STAKING, process.env.PANCAKE_FARM, process.env.BAKERY_FARM, process.env.JUL_FARM].filter(addr => addr !== undefined) as string[]
-              const wallet = new Wallet(web3, stakingPoolAddress, req.params.addr)
+              const wallet = new Wallet(this._web3, stakingPoolAddress, req.params.addr)
               await wallet.fetchInfos()
               res.status(200).send(wallet.infosAsJson());
             }
@@ -44,11 +45,10 @@ export class WalletsRoutes extends CommonRoutesConfig {
     this.app.route(`/lp/:addr`)
       .get(async (req: express.Request, res: express.Response) => {
         try {
-          const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443"));
-          const isListening = await web3.eth.net.isListening()
+          const isListening = await this._web3.eth.net.isListening()
           if (isListening) {
-            if (web3.utils.isAddress(req.params.addr)) {
-              const lpToken = new LPToken(web3, req.params.addr)
+            if (this._web3.utils.isAddress(req.params.addr)) {
+              const lpToken = new LPToken(this._web3, req.params.addr)
               await lpToken.init()
               res.status(200).send(lpToken.infosAsJson());
             }

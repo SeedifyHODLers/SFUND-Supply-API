@@ -33,10 +33,10 @@ export class StakingPool extends StakingPoolContract {
     works.push(this.getPendingReward(this._walletAddress).then(pendingAmount => this._pendingAmount = pendingAmount))
     const rewardTokenAddress = await this.getRewardToken();
     const stakingTokenAddress = await this.getStakingToken();
-    const rewardToken = TokenManager.get(rewardTokenAddress)
+    const rewardToken = TokenManager.getToken(rewardTokenAddress)
     if (rewardToken === undefined) {
       this._rewardToken = new Token(this.web3, rewardTokenAddress);
-      works.push(this._rewardToken.init().then(() => TokenManager.add(this._rewardToken)))
+      works.push(this._rewardToken.init().then(() => TokenManager.addToken(this._rewardToken)))
     }
     else {
       this._rewardToken = rewardToken
@@ -45,8 +45,13 @@ export class StakingPool extends StakingPoolContract {
     if (stakingTokenAddress != rewardTokenAddress) {
       // Farming
       this._isFarming = true
-      this._stakingToken = new LPToken(this.web3, stakingTokenAddress)
-      works.push(this._stakingToken.init())
+      const stakingToken = TokenManager.getLPToken(stakingTokenAddress)
+      if (stakingToken === undefined) {
+        this._stakingToken = new LPToken(this.web3, stakingTokenAddress)
+        works.push(this._stakingToken.init())
+      } else {
+        this._stakingToken = stakingToken
+      }
       await Promise.all(works)
     }
     else {
