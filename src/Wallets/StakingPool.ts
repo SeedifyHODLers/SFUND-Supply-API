@@ -68,9 +68,9 @@ export class StakingPool extends StakingPoolContract {
   public get stackedAmount(): Map<string, number> {
     const result = new Map<string, number>()
     if (this._stakingToken instanceof LPToken) {
-      const amountToken0 = ((this._stakingToken.getToken0Amount() / this._stakingToken.totalSupply) * this._stackedAmount) / this._stakingToken.token0.decimals
+      const amountToken0 = ((this._stakingToken.getToken0Amount() / this._allStakedAmount) * this._stackedAmount) / this._stakingToken.token0.decimals
       result.set(this._stakingToken.token0.symbol, amountToken0)
-      const amountToken1 = ((this._stakingToken.getToken1Amount() / this._stakingToken.totalSupply) * this._stackedAmount) / this._stakingToken.token1.decimals
+      const amountToken1 = ((this._stakingToken.getToken1Amount() / this._allStakedAmount) * this._stackedAmount) / this._stakingToken.token1.decimals
       result.set(this._stakingToken.token1.symbol, amountToken1)
     }
     else {
@@ -93,7 +93,7 @@ export class StakingPool extends StakingPoolContract {
     const rewardPerSec = (this._rewardPerSec * (this._stackedAmount / this._allStakedAmount)) / this._rewardToken.decimals
     const poolDuration = this._finishTime - this._startTime
     if (this._stakingToken instanceof LPToken) {
-      return new FarmInfos(this.stackedAmount, this.pendingAmount, rewardPerSec, poolDuration, this._stakingToken.symbol, this._stackedAmount / this._stakingToken.decimals)
+      return new FarmInfos(this.stackedAmount, this.pendingAmount, rewardPerSec, poolDuration, this._stakingToken.symbol, this._stackedAmount / this._stakingToken.decimals, this._allStakedAmount)
     }
     return new StakingInfos(this.stackedAmount, this.pendingAmount, rewardPerSec, poolDuration)
   }

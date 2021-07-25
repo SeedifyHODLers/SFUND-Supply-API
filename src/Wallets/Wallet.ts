@@ -13,6 +13,7 @@ export class Wallet {
   private _farmTotal = new Map<string, number>()
   private _inWallet = new Map<string, number>();
   private _stakingTotal = new Map<string, number>();
+  private _total_eligible: number = 0;
 
   constructor(private _web3: Web3, private _poolsAddress: string[], private _walletAddress: string) { }
 
@@ -22,6 +23,9 @@ export class Wallet {
       const poolInfos = pool.infos
       pool.stackedAmount.forEach((amount: number, symbol: string) => {
         this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
+        if (symbol.toLowerCase() == 'sfund') {
+          this._total_eligible += amount
+        }
         if (poolInfos instanceof FarmInfos) {
           this._farmTotal.set(symbol, (this._farmTotal.get(symbol) || 0) + amount)
         }
@@ -47,6 +51,7 @@ export class Wallet {
   public infosAsJson = (): JSON => {
     return JSON.parse(JSON.stringify({
       "total": Object.fromEntries(this._total.entries()),
+      "eligible": this._total_eligible,
       "staking": {
         "total": Object.fromEntries(this._stakingTotal.entries()),
         "details": this._poolInfos.filter((poolInfo) => poolInfo instanceof StakingInfos)

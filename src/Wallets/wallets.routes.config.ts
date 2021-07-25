@@ -3,6 +3,7 @@ import Web3 from 'web3';
 import { CommonRoutesConfig } from '../common/common.routes.config';
 import { ConfigError } from '../ConfigError';
 import { LPToken } from './LPToken';
+import { TokenManager } from './TokenManager';
 import { Wallet } from './Wallet';
 
 export class WalletsRoutes extends CommonRoutesConfig {
@@ -48,8 +49,11 @@ export class WalletsRoutes extends CommonRoutesConfig {
           const isListening = await this._web3.eth.net.isListening()
           if (isListening) {
             if (this._web3.utils.isAddress(req.params.addr)) {
-              const lpToken = new LPToken(this._web3, req.params.addr)
-              await lpToken.init()
+              let lpToken = TokenManager.getLPToken(req.params.addr)
+              if (lpToken === undefined) {
+                lpToken = new LPToken(this._web3, req.params.addr)
+                await lpToken.init()
+              }
               res.status(200).send(lpToken.infosAsJson());
             }
             else {

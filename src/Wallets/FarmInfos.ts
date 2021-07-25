@@ -1,5 +1,5 @@
 export class FarmInfos {
-  constructor(private _tokens: Map<string, number>, private _pendingReward: Map<string, number>, private _rewardPerSec: number, private _poolDuration: number, private _symbol: string, private _lp: number) { }
+  constructor(private _tokens: Map<string, number>, private _pendingReward: Map<string, number>, private _rewardPerSec: number, private _poolDuration: number, private _symbol: string, private _lp: number, private _totalSupply: number) { }
 
   public get tokens(): Map<string, number> {
     return this._tokens
@@ -23,6 +23,7 @@ export class FarmInfos {
       "lp": this._lp,
       "tokens": Object.fromEntries(this._tokens.entries()),
       "pendingReward": Object.fromEntries(this._pendingReward.entries()),
+      "totalSupply": this._totalSupply,
       "rewardPerSec": this._rewardPerSec,
       "duration": this._poolDuration
     }))
