@@ -93,7 +93,7 @@ export class StakingPool extends StakingPoolContract {
     const rewardPerSec = (this._rewardPerSec * (this._stackedAmount / this._allStakedAmount)) / this._rewardToken.decimals
     const poolDuration = this._finishTime - this._startTime
     if (this._stakingToken instanceof LPToken) {
-      return new FarmInfos(this.stackedAmount, this.pendingAmount, rewardPerSec, poolDuration, this._stakingToken.symbol, this._stackedAmount / this._stakingToken.decimals, this._allStakedAmount)
+      return new FarmInfos(this.stackedAmount, this.pendingAmount, rewardPerSec, poolDuration, this._stakingToken.symbol, this._stackedAmount / this._stakingToken.decimals, this._allStakedAmount / this._stakingToken.decimals)
     }
     return new StakingInfos(this.stackedAmount, this.pendingAmount, rewardPerSec, poolDuration)
   }
