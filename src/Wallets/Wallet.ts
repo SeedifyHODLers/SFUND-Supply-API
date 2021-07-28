@@ -78,6 +78,7 @@ export class Wallet {
       const amount = (await token.getBalanceOf(this._walletAddress)) / token.decimals
       this._inWallet.set(symbol, (this._inWallet.get(symbol) || 0) + amount)
       this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
+      this._total_eligible += amount
     }))
   }
 }
