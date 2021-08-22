@@ -5,6 +5,7 @@ import * as expressWinston from 'express-winston';
 import * as http from 'http';
 import * as winston from 'winston';
 import { CommonRoutesConfig } from './common/common.routes.config';
+import { MCapRoutes } from './MCap/mcap.routes.config';
 import { WalletsRoutes } from './Wallets/wallets.routes.config';
 
 
@@ -41,6 +42,7 @@ app.use(expressWinston.logger(loggerOptions));
 // here we are adding the UserRoutes to our array,
 // after sending the Express.js application object to have the routes added to our app!
 routes.push(new WalletsRoutes(app));
+routes.push(new MCapRoutes(app))
 
 server.listen(port, () => {
   routes.forEach((route: CommonRoutesConfig) => {

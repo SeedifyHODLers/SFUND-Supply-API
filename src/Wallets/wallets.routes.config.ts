@@ -20,7 +20,7 @@ export class WalletsRoutes extends CommonRoutesConfig {
           const isListening = await this._web3.eth.net.isListening()
           if (isListening) {
             if (this._web3.utils.isAddress(req.params.addr)) {
-              const stakingPoolAddress: string[] = [process.env.SFUND_STAKING, process.env.PANCAKE_FARM, process.env.BAKERY_FARM, process.env.JUL_FARM].filter(addr => addr !== undefined) as string[]
+              const stakingPoolAddress: string[] = [process.env.SFUND_STAKING, process.env.PANCAKE_FARM, process.env.BAKERY_FARM].filter(addr => addr !== undefined) as string[]
               const wallet = new Wallet(this._web3, stakingPoolAddress, req.params.addr)
               await wallet.fetchInfos()
               res.status(200).send(wallet.infosAsJson());

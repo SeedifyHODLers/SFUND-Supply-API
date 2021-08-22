@@ -42,4 +42,13 @@ export class StakingPoolContract extends Contract {
   async getRewardPerSec(): Promise<number> {
     return this.contract.methods.rewardPerSec().call()
   }
+
+  async getLastRewardTime(): Promise<number> {
+    return this.contract.methods.lastRewardTime().call()
+  }
+
+  async getPoolTokenAmount(): Promise<number> {
+    return this.contract.methods.poolTokenAmount().call()
+  }
+
 }
