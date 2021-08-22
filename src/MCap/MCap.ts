@@ -131,19 +131,23 @@ SET amount = ${wallet.amount};`).join(" ")
 
   private reducer = (accumulator: number, currentValue: number): number => {
     return (accumulator + currentValue)
-  };
+  }
+
+  public static toDisplay = (value: number): number => {
+    return parseFloat(value.toFixed(2))
+  }
 
   public infosAsJson = (): JSON => {
     return JSON.parse(JSON.stringify({
-      "maxSupply": this._maxSupply,
-      "totalSupply": this._totalSupply,
-      "circulatingSupply": this._circulatingSupply,
+      "maxSupply": MCap.toDisplay(this._maxSupply),
+      "totalSupply": MCap.toDisplay(this._totalSupply),
+      "circulatingSupply": MCap.toDisplay(this._circulatingSupply),
       "teamWallets": {
-        "total": this.teamWallets.map(wallet => wallet.amount).reduce(this.reducer, 0),
+        "total": MCap.toDisplay(this.teamWallets.map(wallet => wallet.amount).reduce(this.reducer, 0)),
         "details": this.teamWallets.map(wallet => wallet.toJson())
       },
       "exchangesWallets": {
-        "total": this.exchangesWallets.map(wallet => wallet.amount).reduce(this.reducer, 0),
+        "total": MCap.toDisplay(this.exchangesWallets.map(wallet => wallet.amount).reduce(this.reducer, 0)),
         "details": this.exchangesWallets.map(wallet => wallet.toJson())
       }
     }))

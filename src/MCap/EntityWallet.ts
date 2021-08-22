@@ -1,3 +1,5 @@
+import { MCap } from "./MCap";
+
 export class EntityWallet {
   private _amount: number = 0;
 
@@ -22,7 +24,7 @@ export class EntityWallet {
   toJson(): JSON {
     return JSON.parse(JSON.stringify({
       name: this._name,
-      amount: this._amount
+      amount: MCap.toDisplay(this._amount)
     }))
   }
 }
