@@ -12,7 +12,8 @@ export class MCap {
     new EntityWallet("BakerySwap", "0x782f3f0d2b321d5ab7f15cd1665b95ec479dcfa5"),
     new EntityWallet("KuCoin", "0x4cf8800ccc0a56396f77b1e7c46160f5df0e09a5"),
     new EntityWallet("PancakeSwap V1", "0x33338c4fdb9a4a18c5c280c30338acda1b244425"),
-    new EntityWallet("JulSwap", "0xf94fd45b0c7f2b305040cea4958a9ab8ee73e1f4")
+    new EntityWallet("JulSwap", "0xf94fd45b0c7f2b305040cea4958a9ab8ee73e1f4"),
+    new EntityWallet("Digifinex", "0xffefe959d8baea028b1697abfc4285028d6ceb10")
   ]
   readonly teamWallets: EntityWallet[] = [
     new EntityWallet("Operations Pool", "0x88dba2cf8911a80cc50a1b392b5ff6b47b930330"),
