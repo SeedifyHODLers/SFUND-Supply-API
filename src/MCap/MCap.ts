@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import { LockContract } from "../Contracts/LockContract";
-import { StakingPoolContract } from "../Contracts/StakingPoolContract";
+import { TosDisStakingPoolContract } from "../Contracts/StakingPoolContract";
 import { TokenContract } from "../Contracts/TokenContract";
 import client from '../DbConnector';
 import { EntityWallet } from "./EntityWallet";
@@ -54,7 +54,7 @@ export class MCap {
     this._circulatingSupply -= this.amountDecimal(await lockContract.getTotalTokenBalance(this._contractAddr))
     await Promise.all(this.poolAddresses.map(async contractAddr => {
       if (typeof contractAddr === "string") {
-        const pool = new StakingPoolContract(this._web3, contractAddr)
+        const pool = new TosDisStakingPoolContract(this._web3, contractAddr)
         return Promise.all([pool.getPoolTokenAmount(), pool.getRewardPerSec(), pool.getLastRewardTime(), pool.getStartTime()])
           .then(tasks => this._circulatingSupply -= this.amountDecimal(tasks[0] - (tasks[1] * (tasks[2] - tasks[3]))))
       }
@@ -70,7 +70,7 @@ export class MCap {
         if (err) {
           reject(err)
         }
-        res.rows.map(row => {
+        res.rows.forEach(row => {
           this._maxSupply = row['max']
           this._totalSupply = row['total']
           this._circulatingSupply = row['circulating']
@@ -79,29 +79,26 @@ export class MCap {
       })
     }).catch(err => console.log(err))
 
-    const teamRows = await new Promise<any>((resolve, reject) => {
-      client.query("SELECT * FROM team_wallets", (err, res) => {
-        if (err) {
-          reject(err)
-        }
-        resolve(res.rows)
-      })
-    }).catch(err => console.log(err))
+    const fetchRows = (table: string) => {
+      return new Promise<any>((resolve, reject) => {
+        client.query(`SELECT * FROM ${table}`, async (err, res) => {
+          if (err) {
+            reject(err)
+          }
+          resolve(res.rows)
+        })
+      }).catch(err => console.log(err))
+    }
 
-    this.teamWallets.map(wallet => {
+    const teamRows = await fetchRows("team_wallets")
+
+    this.teamWallets.forEach(wallet => {
       wallet.amount = teamRows.find((row: { [x: string]: string | number }) => row['name'] === wallet.name)['amount']
     })
 
-    const exchangesRows = await new Promise<any>((resolve, reject) => {
-      client.query("SELECT * FROM exchange_wallets", async (err, res) => {
-        if (err) {
-          reject(err)
-        }
-        resolve(res.rows)
-      })
-    }).catch(err => console.log(err))
+    const exchangesRows = await fetchRows("exchange_wallets")
 
-    this.exchangesWallets.map(wallet => {
+    this.exchangesWallets.forEach(wallet => {
       wallet.amount = exchangesRows.find((row: { [x: string]: string | number }) => row['name'] === wallet.name)['amount']
     })
   }

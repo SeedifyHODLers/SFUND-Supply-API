@@ -21,7 +21,10 @@ export class WalletsRoutes extends CommonRoutesConfig {
           if (isListening) {
             if (this._web3.utils.isAddress(req.params.addr)) {
               const stakingPoolAddress: string[] = [process.env.SFUND_STAKING, process.env.PANCAKE_FARM, process.env.BAKERY_FARM].filter(addr => addr !== undefined) as string[]
-              const wallet = new Wallet(this._web3, stakingPoolAddress, req.params.addr)
+              const apeStakingPoolAddress: string | undefined = process.env.APE_STAKING;
+              const apeStakingFarmAddress: string | undefined = process.env.APE_FARM;
+              const wallet = new Wallet(this._web3, req.params.addr, stakingPoolAddress, apeStakingPoolAddress, apeStakingFarmAddress)
+              await wallet.initPools()
               await wallet.fetchInfos()
               res.status(200).send(wallet.infosAsJson());
             }

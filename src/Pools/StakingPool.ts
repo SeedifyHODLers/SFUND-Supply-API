@@ -1,12 +1,12 @@
 import Web3 from "web3";
-import { StakingPoolContract } from "../Contracts/StakingPoolContract";
+import { TosDisStakingPoolContract } from "../Contracts/StakingPoolContract";
+import { LPToken } from "../Wallets/LPToken";
+import { Token } from "../Wallets/Token";
+import { TokenManager } from "../Wallets/TokenManager";
 import { FarmInfos } from "./FarmInfos";
-import { LPToken } from "./LPToken";
 import { StakingInfos } from "./StakingInfos";
-import { Token } from "./Token";
-import { TokenManager } from "./TokenManager";
 
-export class StakingPool extends StakingPoolContract {
+export class TosDisStakingPool extends TosDisStakingPoolContract {
   private _stackedAmount!: number;
   private _pendingAmount!: number;
   private _rewardToken!: Token;
@@ -96,21 +96,5 @@ export class StakingPool extends StakingPoolContract {
       return new FarmInfos(this.stackedAmount, this.pendingAmount, rewardPerSec, poolDuration, this._stakingToken.symbol, this._stackedAmount / this._stakingToken.decimals, this._allStakedAmount / this._stakingToken.decimals)
     }
     return new StakingInfos(this.stackedAmount, this.pendingAmount, rewardPerSec, poolDuration)
-  }
-
-  public get rewardPerSec(): number {
-    return this._rewardPerSec
-  }
-
-  public get allStacedAmount(): number {
-    return this._allStakedAmount
-  }
-
-  public get startTime(): number {
-    return this._startTime
-  }
-
-  public get finishTime(): number {
-    return this._finishTime
   }
 }

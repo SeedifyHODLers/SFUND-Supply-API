@@ -1,4 +1,5 @@
 import { LPTokenContract } from "../Contracts/LPTokenContract";
+import { Reserve } from "../Interfaces/Reserve";
 import { Token } from "./Token";
 import { TokenManager } from "./TokenManager";
 

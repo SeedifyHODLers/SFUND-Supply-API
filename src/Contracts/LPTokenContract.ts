@@ -1,6 +1,7 @@
 import Web3 from "web3";
 import { AbiItem } from "web3-utils";
 import lpTokenAbi from "../ABI/LPToken.json";
+import { Reserve } from "../Interfaces/Reserve";
 import { TokenContract } from "./TokenContract";
 
 export class LPTokenContract extends TokenContract {

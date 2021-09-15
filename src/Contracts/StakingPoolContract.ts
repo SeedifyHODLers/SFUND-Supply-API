@@ -3,7 +3,7 @@ import { AbiItem } from "web3-utils"
 import stackingPoolAbi from "../ABI/StakingPool.json"
 import { Contract } from "./Contract"
 
-export class StakingPoolContract extends Contract {
+export class TosDisStakingPoolContract extends Contract {
   constructor(web3: Web3, contractAddress: string) {
     super(web3, contractAddress, stackingPoolAbi.abi as AbiItem[])
   }
