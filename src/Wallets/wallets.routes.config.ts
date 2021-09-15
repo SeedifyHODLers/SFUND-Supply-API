@@ -37,12 +37,15 @@ export class WalletsRoutes extends CommonRoutesConfig {
           }
         }
         catch (e) {
-          console.log(e.message);
+          console.log(e);
           if (e instanceof ConfigError) {
             res.status(e.code).send({ error: "Internal server error" });
           }
-          else {
+          else if (e instanceof Error) {
             res.status(400).send({ error: e.message });
+          }
+          else {
+            res.status(500)
           }
         }
       })
@@ -68,12 +71,15 @@ export class WalletsRoutes extends CommonRoutesConfig {
           }
         }
         catch (e) {
-          console.log(e.message);
+          console.log(e);
           if (e instanceof ConfigError) {
             res.status(e.code).send({ error: "Internal server error" });
           }
-          else {
+          else if (e instanceof Error) {
             res.status(400).send({ error: e.message });
+          }
+          else {
+            res.status(500)
           }
         }
       })
