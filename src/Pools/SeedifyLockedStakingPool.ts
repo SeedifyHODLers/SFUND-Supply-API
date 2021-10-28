@@ -25,30 +25,26 @@ export class SeedifyLockedStakingPool extends SeedifyLockedStakingContract imple
 
   async init(): Promise<void> {
     const works: Promise<any>[] = []
-    if (await this.web3.eth.net.isListening()) {
-      const tokenAddress = await this.tokenAddress()
-      this._lockDuration = (await this.lockDuration()) * 60 * 60
-      const rewardToken = TokenManager.getToken(tokenAddress)
-      if (rewardToken === undefined) {
-        this._token = new Token(this.web3, tokenAddress)
-        works.push(this._token.init().then(() => TokenManager.addToken(this._token)))
-      }
-      else {
-        this._token = rewardToken
-      }
-      await Promise.all(works)
+    const tokenAddress = await this.tokenAddress()
+    this._lockDuration = (await this.lockDuration()) * 60 * 60
+    const rewardToken = TokenManager.getToken(tokenAddress)
+    if (rewardToken === undefined) {
+      this._token = new Token(this.web3, tokenAddress)
+      works.push(this._token.init().then(() => TokenManager.addToken(this._token)))
     }
+    else {
+      this._token = rewardToken
+    }
+    await Promise.all(works)
   }
 
   async fetchInfos(walletAddress: string) {
-    if (await this.web3.eth.net.isListening()) {
-      const works: Promise<any>[] = []
-      works.push(this.stakedTotal().then((amount: number) => this._stakedTotal = amount))
-      works.push(this.calculate(walletAddress).then((amount: number) => this._calculatedReward = amount))
-      works.push(this.getUserDeposits(walletAddress).then((userDeposit: StakingUserDeposit) => this._userDeposit = userDeposit))
-      await Promise.all(works)
-      this._rewardPerSec = this._calculatedReward / (this._lockDuration) / this.stakedToken.decimals
-    }
+    const works: Promise<any>[] = []
+    works.push(this.stakedTotal().then((amount: number) => this._stakedTotal = amount))
+    works.push(this.calculate(walletAddress).then((amount: number) => this._calculatedReward = amount))
+    works.push(this.getUserDeposits(walletAddress).then((userDeposit: StakingUserDeposit) => this._userDeposit = userDeposit))
+    await Promise.all(works)
+    this._rewardPerSec = this._calculatedReward / (this._lockDuration) / this.stakedToken.decimals
   }
 
   public get infos(): LockedStakingInfos {

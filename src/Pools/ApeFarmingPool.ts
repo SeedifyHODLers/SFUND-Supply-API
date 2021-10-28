@@ -27,39 +27,35 @@ export class ApeFarmingPool extends ApeFarmingContract implements PoolContract {
 
   async init(): Promise<void> {
     const works: Promise<any>[] = []
-    if (await this.web3.eth.net.isListening()) {
-      const rewardTokenAddress = await this.getRewardToken()
-      this._poolInfo = await this.getPoolInfo()
-      const rewardToken = TokenManager.getToken(rewardTokenAddress)
-      if (rewardToken === undefined) {
-        this._rewardToken = new Token(this.web3, rewardTokenAddress)
-        works.push(this._rewardToken.init().then(() => TokenManager.addToken(this._rewardToken)))
-      }
-      else {
-        this._rewardToken = rewardToken
-      }
-      const stakingToken = TokenManager.getLPToken(this._poolInfo.lpToken)
-      if (stakingToken === undefined) {
-        this._stakingToken = new LPToken(this.web3, this._poolInfo.lpToken)
-        works.push(this._stakingToken.init().then(() => TokenManager.addLPToken(this._stakingToken)))
-      } else {
-        this._stakingToken = stakingToken
-      }
-      await Promise.all(works)
+    const rewardTokenAddress = await this.getRewardToken()
+    this._poolInfo = await this.getPoolInfo()
+    const rewardToken = TokenManager.getToken(rewardTokenAddress)
+    if (rewardToken === undefined) {
+      this._rewardToken = new Token(this.web3, rewardTokenAddress)
+      works.push(this._rewardToken.init().then(() => TokenManager.addToken(this._rewardToken)))
     }
+    else {
+      this._rewardToken = rewardToken
+    }
+    const stakingToken = TokenManager.getLPToken(this._poolInfo.lpToken)
+    if (stakingToken === undefined) {
+      this._stakingToken = new LPToken(this.web3, this._poolInfo.lpToken)
+      works.push(this._stakingToken.init().then(() => TokenManager.addLPToken(this._stakingToken)))
+    } else {
+      this._stakingToken = stakingToken
+    }
+    await Promise.all(works)
   }
 
   async fetchInfos(walletAddress: string) {
-    if (await this.web3.eth.net.isListening()) {
-      const works: Promise<any>[] = []
-      const totalAllocPoint = await this.getTotalAllocPoint()
-      this._poolInfo = await this.getPoolInfo()
-      works.push(this.getRewardPerBlock().then((rewardPerBloc) => this._rewardPerSec = (rewardPerBloc / 3 / totalAllocPoint) * this._poolInfo.allocPoint))
-      works.push(this.getPendingReward(walletAddress).then((amount) => this._pendingAmount = amount))
-      works.push(this.getUserInfo(walletAddress).then((userInfo) => this._userInfo = userInfo))
-      works.push(this._stakingToken.getBalanceOf(this.contractAddress).then((allStakedAmount) => this._allStakedAmount = allStakedAmount))
-      await Promise.all(works)
-    }
+    const works: Promise<any>[] = []
+    const totalAllocPoint = await this.getTotalAllocPoint()
+    this._poolInfo = await this.getPoolInfo()
+    works.push(this.getRewardPerBlock().then((rewardPerBloc) => this._rewardPerSec = (rewardPerBloc / 3 / totalAllocPoint) * this._poolInfo.allocPoint))
+    works.push(this.getPendingReward(walletAddress).then((amount) => this._pendingAmount = amount))
+    works.push(this.getUserInfo(walletAddress).then((userInfo) => this._userInfo = userInfo))
+    works.push(this._stakingToken.getBalanceOf(this.contractAddress).then((allStakedAmount) => this._allStakedAmount = allStakedAmount))
+    await Promise.all(works)
   }
 
   public get infos(): FarmInfos {

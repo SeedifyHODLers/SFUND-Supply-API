@@ -27,39 +27,35 @@ export class SeedifyLockedFarmingPool extends SeedifyLockedFarmingContract imple
 
   async init(): Promise<void> {
     const works: Promise<any>[] = []
-    if (await this.web3.eth.net.isListening()) {
-      const rewardTokenAddress = await this.rewardTokenAddress()
-      this._lockDuration = (await this.lockDuration()) * 60 * 60
-      const rewardToken = TokenManager.getToken(rewardTokenAddress)
-      if (rewardToken === undefined) {
-        this._rewardToken = new Token(this.web3, rewardTokenAddress)
-        works.push(this._rewardToken.init().then(() => TokenManager.addToken(this._rewardToken)))
-      }
-      else {
-        this._rewardToken = rewardToken
-      }
-      const stakingTokenAddress = await this.stakingTokenAddress()
-      const stakingToken = TokenManager.getLPToken(stakingTokenAddress)
-      if (stakingToken === undefined) {
-        this._stakingToken = new LPToken(this.web3, stakingTokenAddress)
-        works.push(this._stakingToken.init().then(() => TokenManager.addLPToken(this._stakingToken)))
-      } else {
-        this._stakingToken = stakingToken
-      }
-      await Promise.all(works)
+    const rewardTokenAddress = await this.rewardTokenAddress()
+    this._lockDuration = (await this.lockDuration()) * 60 * 60
+    const rewardToken = TokenManager.getToken(rewardTokenAddress)
+    if (rewardToken === undefined) {
+      this._rewardToken = new Token(this.web3, rewardTokenAddress)
+      works.push(this._rewardToken.init().then(() => TokenManager.addToken(this._rewardToken)))
     }
+    else {
+      this._rewardToken = rewardToken
+    }
+    const stakingTokenAddress = await this.stakingTokenAddress()
+    const stakingToken = TokenManager.getLPToken(stakingTokenAddress)
+    if (stakingToken === undefined) {
+      this._stakingToken = new LPToken(this.web3, stakingTokenAddress)
+      works.push(this._stakingToken.init().then(() => TokenManager.addLPToken(this._stakingToken)))
+    } else {
+      this._stakingToken = stakingToken
+    }
+    await Promise.all(works)
   }
 
   async fetchInfos(walletAddress: string) {
-    if (await this.web3.eth.net.isListening()) {
-      const works: Promise<any>[] = []
-      works.push(this.blocksPerHour())
-      works.push(this.rewPerBlock())
-      works.push(this.stakedTotal().then((amount: number) => this._stakedTotal = amount))
-      works.push(this.calculate(walletAddress).then((amount: number) => this._calculatedReward = amount))
-      works.push(this.getUserDeposits(walletAddress).then((userDeposit: FarmUserDeposit) => this._userDeposit = userDeposit))
-      await Promise.all(works).then(results => this._rewardPerSec = (results[0] / 60 / 60) * results[1])
-    }
+    const works: Promise<any>[] = []
+    works.push(this.blocksPerHour())
+    works.push(this.rewPerBlock())
+    works.push(this.stakedTotal().then((amount: number) => this._stakedTotal = amount))
+    works.push(this.calculate(walletAddress).then((amount: number) => this._calculatedReward = amount))
+    works.push(this.getUserDeposits(walletAddress).then((userDeposit: FarmUserDeposit) => this._userDeposit = userDeposit))
+    await Promise.all(works).then(results => this._rewardPerSec = (results[0] / 60 / 60) * results[1])
   }
 
   public get infos(): LockedFarmingInfos {

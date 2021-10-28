@@ -7,32 +7,29 @@ import { LPToken } from './LPToken';
 import { TokenManager } from './TokenManager';
 import { Wallet } from './Wallet';
 
+const options = {
+  timeout: 30000, // ms
+
+  clientConfig: {
+    // Useful if requests are large
+    maxReceivedFrameSize: 100000000,   // bytes - default: 1MiB
+    maxReceivedMessageSize: 100000000, // bytes - default: 8MiB
+
+    // Useful to keep a connection alive
+    keepalive: true,
+    keepaliveInterval: -1 // ms
+  },
+
+  // Enable auto reconnection
+  reconnect: {
+    auto: true,
+    delay: 60000, // ms
+    onTimeout: false
+  }
+};
 export class WalletsRoutes extends CommonRoutesConfig {
-  private _web3: Web3;
   constructor(app: express.Application) {
     super(app, 'WalletsRoutes');
-    const options = {
-      timeout: 30000, // ms
-
-      clientConfig: {
-        // Useful if requests are large
-        maxReceivedFrameSize: 100000000,   // bytes - default: 1MiB
-        maxReceivedMessageSize: 100000000, // bytes - default: 8MiB
-
-        // Useful to keep a connection alive
-        keepalive: true,
-        keepaliveInterval: -1 // ms
-      },
-
-      // Enable auto reconnection
-      reconnect: {
-        auto: true,
-        delay: 60000, // ms
-        onTimeout: false
-      }
-    };
-
-    this._web3 = new Web3(new Web3.providers.WebsocketProvider("wss://bsc-ws-node.nariox.org:443", options));
   }
 
   configureRoutes() {
@@ -67,22 +64,17 @@ export class WalletsRoutes extends CommonRoutesConfig {
     this.app.route(`/lp/:addr`)
       .get(async (req: express.Request, res: express.Response) => {
         try {
-          const isListening = await this._web3.eth.net.isListening()
-          if (isListening) {
-            if (this._web3.utils.isAddress(req.params.addr)) {
-              let lpToken = TokenManager.getLPToken(req.params.addr)
-              if (lpToken === undefined) {
-                lpToken = new LPToken(this._web3, req.params.addr)
-                await lpToken.init()
-              }
-              res.status(200).send(lpToken.infosAsJson());
+          const web3 = new Web3(new Web3.providers.WebsocketProvider("https://bsc-dataseed1.binance.org:443", options));
+          if (web3.utils.isAddress(req.params.addr)) {
+            let lpToken = TokenManager.getLPToken(req.params.addr)
+            if (lpToken === undefined) {
+              lpToken = new LPToken(web3, req.params.addr)
+              await lpToken.init()
             }
-            else {
-              throw new Error("Invalid address")
-            }
+            res.status(200).send(lpToken.infosAsJson());
           }
           else {
-            throw new ConfigError("Web3 connection not listening")
+            throw new Error("Invalid address")
           }
         }
         catch (e) {
@@ -101,13 +93,14 @@ export class WalletsRoutes extends CommonRoutesConfig {
     this.app.route(`/pools`)
       .get(async (req: express.Request, res: express.Response) => {
         try {
-          const isListening = await this._web3.eth.net.isListening()
+          const web3 = new Web3(new Web3.providers.WebsocketProvider("https://bsc-dataseed1.binance.org:443", options));
+          const isListening = await web3.eth.net.isListening()
           if (isListening) {
             const stakingPoolAddress: string[] = [process.env.SFUND_STAKING, process.env.PANCAKE_FARM, process.env.BAKERY_FARM].filter(addr => addr !== undefined) as string[]
             const apeStakingPoolAddress: string | undefined = process.env.APE_STAKING;
             const apeFarmingPoolAddress: string | undefined = process.env.APE_FARM;
             const seedifyLockedFarmPoolAddresses: string[] = [process.env.LOCKED_FARM_CAKE_LP, process.env.LOCKED_FARM_BAKE_LP].filter(addr => addr !== undefined) as string[]
-            const poolsInfos = new Pool(this._web3, stakingPoolAddress, apeStakingPoolAddress, apeFarmingPoolAddress)
+            const poolsInfos = new Pool(web3, stakingPoolAddress, apeStakingPoolAddress, apeFarmingPoolAddress)
             res.status(200).send(poolsInfos.asJSON());
           }
           else {

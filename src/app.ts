@@ -66,7 +66,7 @@ const options = {
   }
 };
 
-const web3 = new Web3(new Web3.providers.WebsocketProvider("wss://bsc-ws-node.nariox.org:443", options));
+const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443", options));
 const seedifyLockedPoolAddresses: string[] = [process.env.LOCKED_STAKING_7D, process.env.LOCKED_STAKING_14D, process.env.LOCKED_STAKING_30D, process.env.LOCKED_STAKING_60D].filter(addr => addr !== undefined) as string[]
 const apeStakingAddress: string | undefined = process.env.APE_STAKING
 const apeFarmingAddress: string | undefined = process.env.APE_FARM
