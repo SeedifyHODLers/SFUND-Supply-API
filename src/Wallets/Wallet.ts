@@ -1,5 +1,6 @@
 import { PoolContract } from "../Contracts/PoolContract";
 import { FarmInfos } from "../Pools/FarmInfos";
+import { LockedFarmingInfos } from "../Pools/LockedFarmingInfos";
 import { PoolInfos } from "../Pools/PoolInfos";
 import { PoolManager } from "../Pools/PoolManager";
 import { StakingInfos } from "../Pools/StakingInfos";
@@ -30,7 +31,7 @@ export class Wallet {
         if (pool.isLocked && symbol.toLowerCase() == 'sfund') {
           this._total_eligible += amount
         }
-        if (poolInfos instanceof FarmInfos) {
+        if (poolInfos instanceof FarmInfos || poolInfos instanceof LockedFarmingInfos) {
           this._farmTotal.set(symbol, (this._farmTotal.get(symbol) || 0) + amount)
         }
         else {
@@ -39,7 +40,7 @@ export class Wallet {
       })
       pool.pendingAmount.forEach((amount: number, symbol: string) => {
         this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
-        if (poolInfos instanceof FarmInfos) {
+        if (poolInfos instanceof FarmInfos || poolInfos instanceof LockedFarmingInfos) {
           this._farmTotal.set(symbol, (this._farmTotal.get(symbol) || 0) + amount)
         }
         else {
