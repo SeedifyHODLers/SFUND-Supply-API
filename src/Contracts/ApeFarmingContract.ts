@@ -7,7 +7,7 @@ import { Contract } from "./Contract"
 
 const SFUND_FARM_ID = 123;
 
-export class ApeFarmingContract extends Contract {
+export abstract class ApeFarmingContract extends Contract {
 
   constructor(web3: Web3, contractAddress: string) {
     super(web3, contractAddress, stackingPoolAbi as AbiItem[])

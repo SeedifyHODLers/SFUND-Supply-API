@@ -1,12 +1,20 @@
-export class FarmInfos {
-  constructor(private _tokens: Map<string, number>, private _pendingReward: Map<string, number>, private _rewardPerSec: number, private _poolDuration: number, private _symbol: string, private _lp: number, private _totalSupply: number) { }
+import { PoolInfos } from "./PoolInfos"
 
-  public get tokens(): Map<string, number> {
-    return this._tokens
+export class FarmInfos extends PoolInfos {
+  private _symbol: string
+  private _lp: number
+  private _totalSupply: number
+
+  constructor(tokens: Map<string, number>, pendingReward: Map<string, number>, rewardPerSec: number,
+    symbol: string, lp: number, totalSupply: number) {
+    super(tokens, pendingReward, rewardPerSec)
+    this._symbol = symbol
+    this._lp = lp
+    this._totalSupply = totalSupply
   }
 
-  public get pendingReward(): Map<string, number> {
-    return this._pendingReward
+  public get totalSupply(): number {
+    return this._totalSupply
   }
 
   public get symbol(): string {
@@ -21,11 +29,10 @@ export class FarmInfos {
     return JSON.parse(JSON.stringify({
       "symbol": this._symbol,
       "lp": this._lp,
-      "tokens": Object.fromEntries(this._tokens.entries()),
-      "pendingReward": Object.fromEntries(this._pendingReward.entries()),
+      "tokens": Object.fromEntries(this.tokens.entries()),
+      "pendingReward": Object.fromEntries(this.pendingReward.entries()),
       "totalSupply": this._totalSupply,
-      "rewardPerSec": this._rewardPerSec,
-      "duration": this._poolDuration
+      "rewardPerSec": this.rewardPerSec
     }))
   }
 }

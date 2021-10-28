@@ -1,11 +1,14 @@
 import Web3 from "web3";
 import { LockContract } from "../Contracts/LockContract";
-import { TosDisStakingPoolContract } from "../Contracts/StakingPoolContract";
+import { SeedifyLockedStakingContract } from "../Contracts/SeedifyLockedStakingContract";
 import { TokenContract } from "../Contracts/TokenContract";
 import client from '../DbConnector';
 import { EntityWallet } from "./EntityWallet";
 
 export class MCap {
+  public get circulatingSupply() {
+    return this._circulatingSupply
+  }
   readonly burnAddresses = ["0x0000000000000000000000000000000000000000", "0x000000000000000000000000000000000000dEaD"]
   readonly exchangesWallets: EntityWallet[] = [
     new EntityWallet("PancakeSwap V2", "0x74fA517715C4ec65EF01d55ad5335f90dce7CC87"),
@@ -20,7 +23,7 @@ export class MCap {
     new EntityWallet("Community Rewards Pool", "0xabdc47535cc7c83fccfb3e74fde5ea2761c3c7a7")
   ]
   readonly lockContractAddress = "0x7536592bb74b5d62eb82e8b93b17eed4eed9a85c"
-  readonly poolAddresses = [process.env.SFUND_STAKING, process.env.PANCAKE_FARM, process.env.BAKERY_FARM]
+  readonly poolAddresses = [process.env.LOCKED_STAKING_7D, process.env.LOCKED_STAKING_14D, process.env.LOCKED_STAKING_30D, process.env.LOCKED_STAKING_60D, process.env.LOCKED_FARM_CAKE_LP, process.env.LOCKED_FARM_BAKE_LP]
 
   private _maxSupply: number = 0
   private _totalSupply: number = 0
@@ -53,13 +56,13 @@ export class MCap {
     this._circulatingSupply = this._totalSupply
     const lockContract = new LockContract(this._web3, this.lockContractAddress)
     this._circulatingSupply -= this.amountDecimal(await lockContract.getTotalTokenBalance(this._contractAddr))
-    await Promise.all(this.poolAddresses.map(async contractAddr => {
+    for (const contractAddr of this.poolAddresses) {
       if (typeof contractAddr === "string") {
-        const pool = new TosDisStakingPoolContract(this._web3, contractAddr)
-        return Promise.all([pool.getPoolTokenAmount(), pool.getRewardPerSec(), pool.getLastRewardTime(), pool.getStartTime()])
-          .then(tasks => this._circulatingSupply -= this.amountDecimal(tasks[0] - (tasks[1] * (tasks[2] - tasks[3]))))
+        const pool = new SeedifyLockedStakingContract(this._web3, contractAddr)
+        const rewardBalance = await pool.rewardBalance()
+        this._circulatingSupply -= (this.amountDecimal(rewardBalance))
       }
-    }))
+    }
     await Promise.all(this.teamWallets.map(wallet => {
       this._circulatingSupply -= wallet.amount
     }))

@@ -1,51 +1,33 @@
-import Web3 from "web3";
-import { ApeFarmingPool } from "../Pools/ApeFarmingPool";
-import { ApeStakingPool } from "../Pools/ApeStakingPool";
+import { PoolContract } from "../Contracts/PoolContract";
 import { FarmInfos } from "../Pools/FarmInfos";
+import { PoolInfos } from "../Pools/PoolInfos";
+import { PoolManager } from "../Pools/PoolManager";
 import { StakingInfos } from "../Pools/StakingInfos";
-import { TosDisStakingPool } from "../Pools/StakingPool";
 import { Token } from "./Token";
-
-type Pool = TosDisStakingPool | ApeStakingPool | ApeFarmingPool;
 
 export class Wallet {
 
   private _total = new Map<string, number>()
-  private _poolInfos: (StakingInfos | FarmInfos)[] = []
+  private _poolInfos: PoolInfos[] = []
   private _rewardTokens = new Map<string, Token>()
-  private _allPools: Pool[] = []
   private _farmTotal = new Map<string, number>()
   private _inWallet = new Map<string, number>();
   private _stakingTotal = new Map<string, number>();
   private _total_eligible: number = 0;
 
-  constructor(private _web3: Web3, private _walletAddress: string, private _poolsAddress: string[], private _apeStakingAddress?: string, private _apeFarmingAddress?: string) {
+  constructor(private _walletAddress: string) {
   }
 
   public initPools = async (): Promise<void> => {
-    const works: Promise<any>[] = this._poolsAddress.map(async (poolAddress) => {
-      const stakingPool = new TosDisStakingPool(this._web3, poolAddress, this._walletAddress)
-      return stakingPool.init().then(() => this._allPools.push(stakingPool))
-    })
-    if (undefined !== this._apeStakingAddress) {
-      const apeStakingPool = new ApeStakingPool(this._web3, this._apeStakingAddress)
-      await apeStakingPool.init()
-      works.push(apeStakingPool.fetchInfos(this._walletAddress).then(() => this._allPools.push(apeStakingPool)))
-    }
-    if (undefined !== this._apeFarmingAddress) {
-      const apeFarmingPool = new ApeFarmingPool(this._web3, this._apeFarmingAddress)
-      await apeFarmingPool.init()
-      works.push(apeFarmingPool.fetchInfos(this._walletAddress).then(() => this._allPools.push(apeFarmingPool)))
-    }
-    await Promise.all(works)
+    await Promise.all(PoolManager.getAll().map(contract => contract.fetchInfos(this._walletAddress)))
   }
 
   fetchInfos = async (): Promise<void> => {
-    this._allPools.forEach((pool: Pool) => {
+    PoolManager.getAll().forEach((pool: PoolContract) => {
       const poolInfos = pool.infos
-      pool.stackedAmount.forEach((amount: number, symbol: string) => {
+      pool.stakedAmount.forEach((amount: number, symbol: string) => {
         this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
-        if (symbol.toLowerCase() == 'sfund') {
+        if (pool.isLocked && symbol.toLowerCase() == 'sfund') {
           this._total_eligible += amount
         }
         if (poolInfos instanceof FarmInfos) {
@@ -93,7 +75,6 @@ export class Wallet {
       const amount = (await token.getBalanceOf(this._walletAddress)) / token.decimals
       this._inWallet.set(symbol, (this._inWallet.get(symbol) || 0) + amount)
       this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
-      this._total_eligible += amount
     }))
   }
 }

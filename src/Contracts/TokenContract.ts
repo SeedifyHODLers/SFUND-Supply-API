@@ -17,8 +17,9 @@ export class TokenContract extends Contract {
       .then((response: number) =>
         resolve(Math.pow(10, response))
       )
-      .catch((error: string) =>
-        reject(new Error(error))
+      .catch((error: Error) => {
+        reject(error)
+      }
       )
     )
   }
