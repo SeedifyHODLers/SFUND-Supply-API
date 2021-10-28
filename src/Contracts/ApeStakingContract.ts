@@ -4,7 +4,7 @@ import stackingPoolAbi from "../ABI/ApeStakinkPool.json"
 import { UserInfo } from "../Interfaces/UserInfo"
 import { Contract } from "./Contract"
 
-export class ApeStakingContract extends Contract {
+export abstract class ApeStakingContract extends Contract {
   constructor(web3: Web3, contractAddress: string) {
     super(web3, contractAddress, stackingPoolAbi as AbiItem[])
   }

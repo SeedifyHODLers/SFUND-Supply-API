@@ -8,7 +8,28 @@ export class MCapRoutes extends CommonRoutesConfig {
   private _web3: Web3;
   constructor(app: express.Application) {
     super(app, 'MCapRoutes');
-    this._web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443"));
+    const options = {
+      timeout: 30000, // ms
+
+      clientConfig: {
+        // Useful if requests are large
+        maxReceivedFrameSize: 100000000,   // bytes - default: 1MiB
+        maxReceivedMessageSize: 100000000, // bytes - default: 8MiB
+
+        // Useful to keep a connection alive
+        keepalive: true,
+        keepaliveInterval: -1 // ms
+      },
+
+      // Enable auto reconnection
+      reconnect: {
+        auto: true,
+        delay: 60000, // ms
+        onTimeout: false
+      }
+    };
+
+    this._web3 = new Web3(new Web3.providers.WebsocketProvider("wss://bsc-ws-node.nariox.org:443", options));
   }
 
   configureRoutes() {
