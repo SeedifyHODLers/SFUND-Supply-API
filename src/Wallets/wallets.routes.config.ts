@@ -64,7 +64,7 @@ export class WalletsRoutes extends CommonRoutesConfig {
     this.app.route(`/lp/:addr`)
       .get(async (req: express.Request, res: express.Response) => {
         try {
-          const web3 = new Web3(new Web3.providers.WebsocketProvider("https://bsc-dataseed1.binance.org:443", options));
+          const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443", options));
           if (web3.utils.isAddress(req.params.addr)) {
             let lpToken = TokenManager.getLPToken(req.params.addr)
             if (lpToken === undefined) {
@@ -94,7 +94,7 @@ export class WalletsRoutes extends CommonRoutesConfig {
     this.app.route(`/pools`)
       .get(async (req: express.Request, res: express.Response) => {
         try {
-          const web3 = new Web3(new Web3.providers.WebsocketProvider("https://bsc-dataseed1.binance.org:443", options));
+          const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443", options));
           const isListening = await web3.eth.net.isListening()
           if (isListening) {
             const stakingPoolAddress: string[] = [process.env.SFUND_STAKING, process.env.PANCAKE_FARM, process.env.BAKERY_FARM].filter(addr => addr !== undefined) as string[]
