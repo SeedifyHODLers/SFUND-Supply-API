@@ -71,6 +71,7 @@ export class WalletsRoutes extends CommonRoutesConfig {
               lpToken = new LPToken(web3, req.params.addr)
               await lpToken.init()
             }
+            await lpToken.fetchInfos()
             res.status(200).send(lpToken.infosAsJson());
           }
           else {

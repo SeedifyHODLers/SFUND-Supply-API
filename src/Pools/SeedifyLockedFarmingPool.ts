@@ -55,6 +55,7 @@ export class SeedifyLockedFarmingPool extends SeedifyLockedFarmingContract imple
     works.push(this.stakedTotal().then((amount: number) => this._stakedTotal = amount))
     works.push(this.calculate(walletAddress).then((amount: number) => this._calculatedReward = amount))
     works.push(this.getUserDeposits(walletAddress).then((userDeposit: FarmUserDeposit) => this._userDeposit = userDeposit))
+    works.push(this._stakingToken.fetchInfos())
     await Promise.all(works).then(results => this._rewardPerSec = (results[0] / 60 / 60) * results[1])
   }
 

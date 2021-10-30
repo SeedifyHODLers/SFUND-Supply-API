@@ -15,8 +15,6 @@ export class LPToken extends LPTokenContract {
     const works: Promise<void | string | number | Reserve>[] = []
     works.push(this.getSymbol().then(symbol => this._symbol = symbol.toLowerCase()))
     works.push(this.getDecimals().then(decimals => this._decimals = decimals))
-    works.push(this.getReserves().then(reserves => this._reserves = reserves))
-    works.push(this.getTotalSupply().then(totalSupply => this._totalSupply = totalSupply))
     const tokenAddress0 = await this.getToken0();
     const token0 = TokenManager.getToken(tokenAddress0)
     if (token0 === undefined) {
@@ -35,6 +33,13 @@ export class LPToken extends LPTokenContract {
     else {
       this._token1 = token1;
     }
+    await Promise.all(works)
+  }
+
+  public async fetchInfos(): Promise<void> {
+    const works: Promise<number | Reserve>[] = []
+    works.push(this.getReserves().then(reserves => this._reserves = reserves))
+    works.push(this.getTotalSupply().then(totalSupply => this._totalSupply = totalSupply))
     await Promise.all(works)
   }
 

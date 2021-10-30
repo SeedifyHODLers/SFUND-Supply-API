@@ -55,6 +55,7 @@ export class ApeFarmingPool extends ApeFarmingContract implements PoolContract {
     works.push(this.getPendingReward(walletAddress).then((amount) => this._pendingAmount = amount))
     works.push(this.getUserInfo(walletAddress).then((userInfo) => this._userInfo = userInfo))
     works.push(this._stakingToken.getBalanceOf(this.contractAddress).then((allStakedAmount) => this._allStakedAmount = allStakedAmount))
+    works.push(this._stakingToken.fetchInfos())
     await Promise.all(works)
   }
 
