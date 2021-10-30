@@ -1,5 +1,6 @@
 import Web3 from "web3";
 import { LockContract } from "../Contracts/LockContract";
+import { SeedifyLockedFarmingContract } from "../Contracts/SeedifyLockedFarmingContract";
 import { SeedifyLockedStakingContract } from "../Contracts/SeedifyLockedStakingContract";
 import { TokenContract } from "../Contracts/TokenContract";
 import client from '../DbConnector';
@@ -23,7 +24,8 @@ export class MCap {
     new EntityWallet("Community Rewards Pool", "0xabdc47535cc7c83fccfb3e74fde5ea2761c3c7a7")
   ]
   readonly lockContractAddress = "0x7536592bb74b5d62eb82e8b93b17eed4eed9a85c"
-  readonly poolAddresses = [process.env.LOCKED_STAKING_7D, process.env.LOCKED_STAKING_14D, process.env.LOCKED_STAKING_30D, process.env.LOCKED_STAKING_60D, process.env.LOCKED_FARM_CAKE_LP, process.env.LOCKED_FARM_BAKE_LP]
+  readonly stakingPoolAddresses = [process.env.LOCKED_STAKING_7D, process.env.LOCKED_STAKING_14D, process.env.LOCKED_STAKING_30D, process.env.LOCKED_STAKING_60D]
+  readonly farmingPoolAddresses = [process.env.LOCKED_FARM_CAKE_LP, process.env.LOCKED_FARM_BAKE_LP]
 
   private _maxSupply: number = 0
   private _totalSupply: number = 0
@@ -56,9 +58,16 @@ export class MCap {
     this._circulatingSupply = this._totalSupply
     const lockContract = new LockContract(this._web3, this.lockContractAddress)
     this._circulatingSupply -= this.amountDecimal(await lockContract.getTotalTokenBalance(this._contractAddr))
-    for (const contractAddr of this.poolAddresses) {
+    for (const contractAddr of this.stakingPoolAddresses) {
       if (typeof contractAddr === "string") {
         const pool = new SeedifyLockedStakingContract(this._web3, contractAddr)
+        const rewardBalance = await pool.rewardBalance()
+        this._circulatingSupply -= (this.amountDecimal(rewardBalance))
+      }
+    }
+    for (const contractAddr of this.farmingPoolAddresses) {
+      if (typeof contractAddr === "string") {
+        const pool = new SeedifyLockedFarmingContract(this._web3, contractAddr)
         const rewardBalance = await pool.rewardBalance()
         this._circulatingSupply -= (this.amountDecimal(rewardBalance))
       }
