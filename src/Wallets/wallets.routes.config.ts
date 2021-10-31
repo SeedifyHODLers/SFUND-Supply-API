@@ -3,6 +3,7 @@ import Web3 from 'web3';
 import { CommonRoutesConfig } from '../common/common.routes.config';
 import { ConfigError } from '../ConfigError';
 import { Pool } from '../Pools/Pool';
+import { PoolManager } from '../Pools/PoolManager';
 import { LPToken } from './LPToken';
 import { TokenManager } from './TokenManager';
 import { Wallet } from './Wallet';
@@ -37,7 +38,7 @@ export class WalletsRoutes extends CommonRoutesConfig {
       .get(async (req: express.Request, res: express.Response) => {
         try {
           if (Web3.utils.isAddress(req.params.addr)) {
-            const wallet = new Wallet(req.params.addr)
+            const wallet = new Wallet(req.params.addr, PoolManager.getAll())
             await wallet.initPools()
             await wallet.fetchInfos()
             res.status(200).send(wallet.infosAsJson());

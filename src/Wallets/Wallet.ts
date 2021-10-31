@@ -1,10 +1,9 @@
-import { PoolContract } from "../Contracts/PoolContract";
-import { FarmInfos } from "../Pools/FarmInfos";
-import { LockedFarmingInfos } from "../Pools/LockedFarmingInfos";
-import { PoolInfos } from "../Pools/PoolInfos";
-import { PoolManager } from "../Pools/PoolManager";
-import { StakingInfos } from "../Pools/StakingInfos";
-import { Token } from "./Token";
+import { PoolContract } from "../Contracts/PoolContract"
+import { FarmInfos } from "../Pools/FarmInfos"
+import { LockedFarmingInfos } from "../Pools/LockedFarmingInfos"
+import { PoolInfos } from "../Pools/PoolInfos"
+import { StakingInfos } from "../Pools/StakingInfos"
+import { Token } from "./Token"
 
 export class Wallet {
 
@@ -12,19 +11,19 @@ export class Wallet {
   private _poolInfos: PoolInfos[] = []
   private _rewardTokens = new Map<string, Token>()
   private _farmTotal = new Map<string, number>()
-  private _inWallet = new Map<string, number>();
-  private _stakingTotal = new Map<string, number>();
-  private _total_eligible: number = 0;
+  private _inWallet = new Map<string, number>()
+  private _stakingTotal = new Map<string, number>()
+  private _total_eligible: number = 0
 
-  constructor(private _walletAddress: string) {
+  constructor(private _walletAddress: string, private _pools: PoolContract[]) {
   }
 
   public initPools = async (): Promise<void> => {
-    await Promise.all(PoolManager.getAll().map(contract => contract.fetchInfos(this._walletAddress)))
+    await Promise.all(this._pools.map(contract => contract.fetchInfos(this._walletAddress)))
   }
 
   fetchInfos = async (): Promise<void> => {
-    PoolManager.getAll().forEach((pool: PoolContract) => {
+    this._pools.forEach((pool: PoolContract) => {
       const poolInfos = pool.infos
       pool.stakedAmount.forEach((amount: number, symbol: string) => {
         this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
@@ -48,7 +47,7 @@ export class Wallet {
         }
       })
       this._rewardTokens.set(pool.rewardToken.symbol, pool.rewardToken)
-      this._poolInfos.push(pool.infos);
+      this._poolInfos.push(pool.infos)
     })
     await this.getInWallet()
   }
