@@ -77,20 +77,23 @@ export class SeedifyLockedStakingPool extends SeedifyLockedStakingContract imple
 
   public get stakedAmount(): Map<string, number> {
     const result = new Map<string, number>()
-    result.set(this._token.symbol, this._userDeposit.depositAmount / this._token.decimals)
-    return result
+    return result.set(this._token.symbol, this._userDeposit.depositAmount / this._token.decimals)
   }
 
   public get pendingAmount(): Map<string, number> {
     const result = new Map<string, number>()
-    result.set(this._token.symbol, this._userDeposit.rewards / this._token.decimals)
-    return result
+    // smart contract return timestamp in second
+    const now = new Date().getTime() / 1000
+    if (this._userDeposit.endTime > now) {
+      const pendingReward = this._calculatedReward * ((now - this._userDeposit.depositTime) / this._lockDuration)
+      return result.set(this._token.symbol, pendingReward / this._token.decimals)
+    }
+    return result.set(this._token.symbol, this._userDeposit.rewards / this._token.decimals)
   }
 
   public get calculatedReward(): Map<string, number> {
     const result = new Map<string, number>()
-    result.set(this._token.symbol, this._calculatedReward / this._token.decimals)
-    return result
+    return result.set(this._token.symbol, this._calculatedReward / this._token.decimals)
   }
 
   public toJSON(): JSON {
