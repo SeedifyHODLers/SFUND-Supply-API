@@ -83,7 +83,7 @@ async function start() {
       app.register(walletRoute)
       app.register(mcapRoute)
 
-      app.listen(port, (err, address) => {
+      app.listen(port, '0.0.0.0', (err, address) => {
         if (err) {
           console.error(err)
           process.exit(1)
