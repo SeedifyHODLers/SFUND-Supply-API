@@ -20,7 +20,7 @@ export abstract class Contract {
     return this._contractAddress;
   }
 
-  protected get web3(): Web3 {
+  public get web3(): Web3 {
     return this._web3;
   }
 }

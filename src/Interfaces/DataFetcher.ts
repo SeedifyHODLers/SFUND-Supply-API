@@ -1,7 +1,8 @@
 import { PoolInfos } from "../Pools/PoolInfos";
 import { Token } from "../Wallets/Token";
 
-export interface PoolContract {
+export interface DataFetcher {
+
   get contractAddress(): string
 
   get isFarming(): boolean

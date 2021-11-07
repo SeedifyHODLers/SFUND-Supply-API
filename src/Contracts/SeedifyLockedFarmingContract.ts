@@ -22,7 +22,7 @@ export class SeedifyLockedFarmingContract extends Contract {
     return this.contract.methods.stakedTotal().call()
   }
 
-  async lockDuration(): Promise<number> {
+  async getLockDuration(): Promise<number> {
     return this.contract.methods.lockDuration().call()
   }
 
@@ -35,20 +35,11 @@ export class SeedifyLockedFarmingContract extends Contract {
   }
 
   async getUserDeposits(address: string): Promise<FarmUserDeposit> {
-    return new Promise((resolve) => this.contract.methods.userDeposits(address).call()
-      .then((response: FarmUserDeposit) => resolve(response))
-      .catch(() => resolve({
-        amount: 0,
-        initialStake: 0,
-        latestClaim: 0,
-        currentPeriod: 0
-      } as FarmUserDeposit)))
+    return this.contract.methods.userDeposits(address).call()
   }
 
   async calculate(address: string): Promise<number> {
-    return new Promise((resolve) => this.contract.methods.calculate(address).call()
-      .then((response: number) => resolve(response))
-      .catch(() => resolve(0)))
+    return this.contract.methods.calculate(address).call().catch(() => 0)
   }
 
   async blocksPerHour(): Promise<number> {

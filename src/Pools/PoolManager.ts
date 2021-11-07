@@ -1,17 +1,17 @@
-import { PoolContract } from "../Contracts/PoolContract";
+import { PoolBase } from "../Interfaces/PoolBase";
 
 export class PoolManager {
-  private static _pools: PoolContract[] = [];
+  private static _pools: PoolBase[] = [];
 
-  static getAll(): PoolContract[] {
+  static getAll(): PoolBase[] {
     return this._pools
   }
 
-  static getPool(contractAddress: string): PoolContract | undefined {
-    return this._pools.find((pool: PoolContract) => pool.contractAddress == contractAddress);
+  static getPool(contractAddress: string): PoolBase | undefined {
+    return this._pools.find((pool: PoolBase) => pool.contractAddress == contractAddress);
   }
 
-  static addPool(pool: PoolContract): void {
+  static addPool(pool: PoolBase): void {
     this._pools.push(pool);
   }
 

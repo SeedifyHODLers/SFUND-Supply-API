@@ -1,4 +1,4 @@
-import { PoolContract } from "../Contracts/PoolContract"
+import { DataFetcher } from "../Interfaces/DataFetcher"
 import { FarmInfos } from "../Pools/FarmInfos"
 import { LockedFarmingInfos } from "../Pools/LockedFarmingInfos"
 import { PoolInfos } from "../Pools/PoolInfos"
@@ -15,15 +15,16 @@ export class Wallet {
   private _stakingTotal = new Map<string, number>()
   private _total_eligible: number = 0
 
-  constructor(private _walletAddress: string, private _pools: PoolContract[]) {
-  }
+  constructor(private _walletAddress: string, private _pools: DataFetcher[]) { }
 
-  public initPools = async (): Promise<void> => {
-    await Promise.all(this._pools.map(contract => contract.fetchInfos(this._walletAddress)))
+  public initPools = async () => {
+    await Promise.all(this._pools.map(async (pool, index) => {
+      await pool.fetchInfos(this._walletAddress)
+    }))
   }
 
   fetchInfos = async (): Promise<void> => {
-    this._pools.forEach((pool: PoolContract) => {
+    this._pools.forEach((pool: DataFetcher) => {
       const poolInfos = pool.infos
       pool.stakedAmount.forEach((amount: number, symbol: string) => {
         this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
@@ -70,11 +71,14 @@ export class Wallet {
     }))
   }
 
-  private getInWallet = async (): Promise<void> => {
-    await Promise.all(Array.from(this._rewardTokens, async ([symbol, token]) => {
-      const amount = (await token.getBalanceOf(this._walletAddress)) / token.decimals
-      this._inWallet.set(symbol, (this._inWallet.get(symbol) || 0) + amount)
-      this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
-    }))
+  private getInWallet = async () => {
+    const works: Promise<void>[] = []
+    for (const [symbol, token] of this._rewardTokens) {
+      works.push(token.getBalanceOf(this._walletAddress).then(amount => {
+        this._inWallet.set(symbol, (this._inWallet.get(symbol) || 0) + (amount / token.decimals))
+        this._total.set(symbol, (this._total.get(symbol) || 0) + (amount / token.decimals))
+      }))
+    }
+    await Promise.all(works)
   }
 }

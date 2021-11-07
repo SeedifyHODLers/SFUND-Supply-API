@@ -1,49 +1,24 @@
-import cors from 'cors';
 import debug from 'debug';
-import express from 'express';
-import * as expressWinston from 'express-winston';
-import * as http from 'http';
+import fastify from 'fastify';
 import Web3 from 'web3';
-import * as winston from 'winston';
-import { CommonRoutesConfig } from './common/common.routes.config';
-import { MCapRoutes } from './MCap/mcap.routes.config';
+import { mcapRoute } from './MCap/mcapRoute';
 import { ApeFarmingPool } from './Pools/ApeFarmingPool';
 import { ApeStakingPool } from './Pools/ApeStakingPool';
 import { PoolManager } from './Pools/PoolManager';
 import { SeedifyLockedFarmingPool } from './Pools/SeedifyLockedFarmingPool';
 import { SeedifyLockedStakingPool } from './Pools/SeedifyLockedStakingPool';
-import { WalletsRoutes } from './Wallets/wallets.routes.config';
+import { walletRoute } from './Wallets/walletRoute';
 
-
-const app: express.Application = express();
-const server: http.Server = http.createServer(app);
+const app = fastify({ logger: true })
 const port = process.env.PORT || 3000;
-const routes: Array<CommonRoutesConfig> = [];
 const debugLog: debug.IDebugger = debug('app');
+const querystring = require('querystring')
 
-// here we are adding middleware to parse all incoming requests as JSON
-app.use(express.json());
+app.register(require('fastify-cors'), {
+  origin: true,
+  querystringParser: (str: string) => querystring.parse(str.toLowerCase())
+})
 
-// here we are adding middleware to allow cross-origin requests
-app.use(cors());
-
-// here we are preparing the expressWinston logging middleware configuration,
-// which will automatically log all HTTP requests handled by Express.js
-const loggerOptions: expressWinston.LoggerOptions = {
-  transports: [new winston.transports.Console()],
-  format: winston.format.combine(
-    winston.format.json(),
-    winston.format.prettyPrint(),
-    winston.format.colorize({ all: true })
-  ),
-};
-
-if (!process.env.DEBUG) {
-  loggerOptions.meta = false; // when not debugging, log requests as one-liners
-}
-
-// initialize the logger with the above configuration
-app.use(expressWinston.logger(loggerOptions));
 
 const options = {
   timeout: 30000, // ms
@@ -105,16 +80,16 @@ async function start() {
         console.log(`${apeFarmingAddress} : ok`)
       }
 
-      // here we are adding the UserRoutes to our array,
-      // after sending the Express.js application object to have the routes added to our app!
-      routes.push(new WalletsRoutes(app));
-      routes.push(new MCapRoutes(app))
+      app.register(walletRoute)
+      app.register(mcapRoute)
 
-      server.listen(port, () => {
-        routes.forEach((route: CommonRoutesConfig) => {
-          debugLog(`Routes configured for ${route.getName()}`);
-        });
-      });
+      app.listen(port, (err, address) => {
+        if (err) {
+          console.error(err)
+          process.exit(1)
+        }
+        console.log(`Server listening at ${address}`)
+      })
     }
   } catch (e) {
     console.warn(e)

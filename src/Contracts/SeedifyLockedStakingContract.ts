@@ -34,7 +34,7 @@ export class SeedifyLockedStakingContract extends Contract {
     return this.contract.methods.name().call();
   }
 
-  async lockDuration(): Promise<number> {
+  async getLockDuration(): Promise<number> {
     return this.contract.methods.lockDuration().call();
   }
 
@@ -43,15 +43,11 @@ export class SeedifyLockedStakingContract extends Contract {
   }
 
   async getUserDeposits(address: string): Promise<StakingUserDeposit> {
-    return new Promise((resolve, reject) => this.contract.methods.userDeposits(address).call()
-      .then((response: StakingUserDeposit) => resolve(response))
-      .catch((error: Error) => reject(error)))
+    return this.contract.methods.userDeposits(address).call()
   }
 
   async calculate(address: string): Promise<number> {
-    return new Promise((resolve, reject) => this.contract.methods.calculate(address).call()
-      .then((response: number) => resolve(response))
-      .catch((error: Error) => reject(error)))
+    return this.contract.methods.calculate(address).call()
   }
 
 }
