@@ -24,7 +24,7 @@ export class MCap {
     new EntityWallet("Community Rewards Pool", "0xabdc47535cc7c83fccfb3e74fde5ea2761c3c7a7")
   ]
   readonly lockContractAddress = "0x7536592bb74b5d62eb82e8b93b17eed4eed9a85c"
-  readonly stakingPoolAddresses = [process.env.LOCKED_STAKING_7D, process.env.LOCKED_STAKING_14D, process.env.LOCKED_STAKING_30D, process.env.LOCKED_STAKING_60D, process.env.LOCKED_STAKING_90D]
+  readonly stakingPoolAddresses = [process.env.LOCKED_STAKING_7D, process.env.LOCKED_STAKING_14D, process.env.LOCKED_STAKING_30D, process.env.LOCKED_STAKING_60D, process.env.LOCKED_STAKING_90D, process.env.LOCKED_STAKING_180D]
   readonly farmingPoolAddresses = [process.env.LOCKED_FARM_CAKE_LP, process.env.LOCKED_FARM_CAKE_LP_OLD, process.env.LOCKED_FARM_BAKE_LP, process.env.LOCKED_FARM_BAKE_LP_OLD]
 
   private _maxSupply: number = 0
