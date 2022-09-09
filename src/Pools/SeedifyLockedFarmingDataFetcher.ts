@@ -16,7 +16,7 @@ export class SeedifyLockedFarmingDataFetcher extends SeedifyLockedFarmingContrac
     latestClaim: 0,
     currentPeriod: 0
   }
-  private _stakedTotal!: number
+  private _stakedBalance!: number
   private _rewardPerSec!: number
   private _isLocked: boolean
 
@@ -34,7 +34,7 @@ export class SeedifyLockedFarmingDataFetcher extends SeedifyLockedFarmingContrac
       this._userDeposit = userDeposit))
     works.push(this.blocksPerHour().then((bph) => blocksPerHour = bph))
     works.push(this.rewPerBlock().then((rpb) => rewPerBlock = rpb))
-    works.push(this.stakedTotal().then((stakedTotal) => this._stakedTotal = stakedTotal))
+    works.push(this.stakedBalance().then((stakedBalance) => this._stakedBalance = stakedBalance))
     works.push(this._stakingToken.fetchInfos())
     works.push(this.calculate(walletAddress).then(amount => this._calculatedReward = amount))
     await Promise.all(works)
@@ -64,7 +64,7 @@ export class SeedifyLockedFarmingDataFetcher extends SeedifyLockedFarmingContrac
   }
 
   public get allStakedAmount(): number {
-    return this._stakedTotal
+    return this._stakedBalance
   }
 
   public get rewardPerSec(): number {
