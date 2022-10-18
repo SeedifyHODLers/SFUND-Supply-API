@@ -50,4 +50,8 @@ export class SeedifyLockedFarmingContract extends Contract {
     return this.contract.methods.rewPerBlock().call()
   }
 
+  async currentBlock(): Promise<number> {
+    return this.contract.methods.currentBlock().call()
+  }
+
 }

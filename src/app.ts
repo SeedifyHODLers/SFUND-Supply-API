@@ -2,8 +2,6 @@ import debug from 'debug';
 import fastify from 'fastify';
 import Web3 from 'web3';
 import { mcapRoute } from './MCap/mcapRoute';
-import { ApeFarmingPool } from './Pools/ApeFarmingPool';
-import { ApeStakingPool } from './Pools/ApeStakingPool';
 import { PoolManager } from './Pools/PoolManager';
 import { SeedifyLockedFarmingPool } from './Pools/SeedifyLockedFarmingPool';
 import { SeedifyLockedStakingPool } from './Pools/SeedifyLockedStakingPool';
@@ -43,9 +41,7 @@ const options = {
 
 const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443", options));
 const seedifyLockedPoolAddresses: string[] = [process.env.LOCKED_STAKING_SNFTS_14D, process.env.LOCKED_STAKING_SNFTS_30D, process.env.LOCKED_STAKING_SNFTS_60D, process.env.LOCKED_STAKING_SNFTS_90D, process.env.LOCKED_STAKING_SNFTS_180D, process.env.LOCKED_STAKING_7D, process.env.LOCKED_STAKING_14D, process.env.LOCKED_STAKING_30D, process.env.LOCKED_STAKING_60D, process.env.LOCKED_STAKING_90D, process.env.LOCKED_STAKING_180D].filter(addr => addr !== undefined) as string[]
-const apeStakingAddress: string | undefined = process.env.APE_STAKING
-const apeFarmingAddress: string | undefined = process.env.APE_FARM
-const seedifyLockedFarmPoolAddresses: string[] = [process.env.LOCKED_FARM_CAKE_LP_SNFTS, process.env.LOCKED_FARM_CAKE_LP, process.env.LOCKED_FARM_BAKE_LP].filter(addr => addr !== undefined) as string[]
+const seedifyLockedFarmPoolAddresses: string[] = [process.env.LOCKED_FARM_CAKE_LP_SNFTS, process.env.LOCKED_FARM_CAKE_LP].filter(addr => addr !== undefined) as string[]
 
 start().catch(e => console.warn(e))
 
@@ -66,18 +62,6 @@ async function start() {
         const stakingPool = new SeedifyLockedFarmingPool(web3, address)
         await stakingPool.init().then(() => PoolManager.addPool(stakingPool))
         console.log(`${address} : ok`)
-      }
-      if (undefined !== apeStakingAddress) {
-        console.log(`${apeStakingAddress} : initialisation...`)
-        const apeStakingPool = new ApeStakingPool(web3, apeStakingAddress)
-        await apeStakingPool.init().then(() => PoolManager.addPool(apeStakingPool))
-        console.log(`${apeStakingAddress} : ok`)
-      }
-      if (undefined !== apeFarmingAddress) {
-        console.log(`${apeFarmingAddress} : initialisation...`)
-        const apeFarmingPool = new ApeFarmingPool(web3, apeFarmingAddress)
-        await apeFarmingPool.init().then(() => PoolManager.addPool(apeFarmingPool))
-        console.log(`${apeFarmingAddress} : ok`)
       }
 
       app.register(walletRoute)

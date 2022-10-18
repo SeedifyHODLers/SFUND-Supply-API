@@ -19,6 +19,8 @@ export class SeedifyLockedFarmingDataFetcher extends SeedifyLockedFarmingContrac
   private _stakedBalance!: number
   private _rewardPerSec!: number
   private _isLocked: boolean
+  private _blocksPerSec!: number
+  private _currentBlock!: number
 
   constructor(web3: Web3, contractAddress: string, private _stakingToken: LPToken, private _rewardToken: Token, private _lockDuration: number) {
     super(web3, contractAddress)
@@ -27,24 +29,27 @@ export class SeedifyLockedFarmingDataFetcher extends SeedifyLockedFarmingContrac
   }
 
   async fetchInfos(walletAddress: string): Promise<void> {
-    let blocksPerHour = 0
     let rewPerBlock = 0
     const works: Promise<number | FarmUserDeposit | void>[] = []
     works.push(this.getUserDeposits(walletAddress).then((userDeposit) =>
       this._userDeposit = userDeposit))
-    works.push(this.blocksPerHour().then((bph) => blocksPerHour = bph))
+    works.push(this.blocksPerHour().then((blocksPerHour) => this._blocksPerSec = blocksPerHour / 60 / 60))
     works.push(this.rewPerBlock().then((rpb) => rewPerBlock = rpb))
     works.push(this.stakedBalance().then((stakedBalance) => this._stakedBalance = stakedBalance))
     works.push(this._stakingToken.fetchInfos())
     works.push(this.calculate(walletAddress).then(amount => this._calculatedReward = amount))
+    works.push(this.currentBlock().then((cb) => this._currentBlock = cb))
     await Promise.all(works)
-    this._rewardPerSec = (blocksPerHour / 60 / 60) * rewPerBlock
+    this._rewardPerSec = this._blocksPerSec * rewPerBlock
   }
 
   public get infos(): LockedFarmingInfos {
+    const blockSinceInitialStake = this._currentBlock - this._userDeposit.initialStake
+    const secondSinceIntialStake = blockSinceInitialStake / this._blocksPerSec
+    const intialStakeDate = Date.now() - secondSinceIntialStake
     const rewardPerSec = (this._rewardPerSec * (this._userDeposit.amount / this.allStakedAmount)) / this._rewardToken.decimals
     return new LockedFarmingInfos(this.stakedAmount, this.pendingAmount, rewardPerSec, this._stakingToken.symbol,
-      this._userDeposit.amount / this._stakingToken.decimals, this.allStakedAmount / this._rewardToken.decimals, this._userDeposit.initialStake, this._lockDuration)
+      this._userDeposit.amount / this._stakingToken.decimals, this.allStakedAmount / this._rewardToken.decimals, intialStakeDate, this._lockDuration)
   }
 
   public get rewardToken(): Token {
