@@ -46,7 +46,7 @@ export class SeedifyLockedFarmingDataFetcher extends SeedifyLockedFarmingContrac
   public get infos(): LockedFarmingInfos {
     const blockSinceInitialStake = this._currentBlock - this._userDeposit.initialStake
     const secondSinceIntialStake = blockSinceInitialStake / this._blocksPerSec
-    const intialStakeDate = (Date.now() - secondSinceIntialStake) / 1000
+    const intialStakeDate = Math.round((Date.now() - secondSinceIntialStake) / 1000)
     const rewardPerSec = (this._rewardPerSec * (this._userDeposit.amount / this.allStakedAmount)) / this._rewardToken.decimals
     return new LockedFarmingInfos(this.stakedAmount, this.pendingAmount, rewardPerSec, this._stakingToken.symbol,
       this._userDeposit.amount / this._stakingToken.decimals, this.allStakedAmount / this._rewardToken.decimals, intialStakeDate, this._lockDuration)
