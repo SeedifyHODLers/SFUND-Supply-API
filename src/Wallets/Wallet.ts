@@ -75,8 +75,9 @@ export class Wallet {
     const works: Promise<void>[] = []
     for (const [symbol, token] of this._rewardTokens) {
       works.push(token.getBalanceOf(this._walletAddress).then(amount => {
-        this._inWallet.set(symbol, (this._inWallet.get(symbol) || 0) + (amount / token.decimals))
-        this._total.set(symbol, (this._total.get(symbol) || 0) + (amount / token.decimals))
+        const realAmount = (amount / token.decimals) > 1e-6 ? (amount / token.decimals) : 1e-6
+        this._inWallet.set(symbol, (this._inWallet.get(symbol) || 0) + realAmount)
+        this._total.set(symbol, (this._total.get(symbol) || 0) + realAmount)
       }))
     }
     await Promise.all(works)
