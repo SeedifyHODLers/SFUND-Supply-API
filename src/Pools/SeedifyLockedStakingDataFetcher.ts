@@ -1,12 +1,14 @@
-import Web3 from "web3"
 import { SeedifyLockedStakingContract } from "../Contracts/SeedifyLockedStakingContract"
 import { DataFetcher } from "../Interfaces/DataFetcher"
 import { StakingUserDeposit } from "../Interfaces/StakingUserDeposit"
 import { Token } from "../Wallets/Token"
 import { LockedStakingInfos } from "./LockedStakingInfos"
+import { getChainName } from "../utils";
+import type Web3 from "web3"
 
 export class SeedifyLockedStakingDataFetcher extends SeedifyLockedStakingContract implements DataFetcher {
 
+  private _chain: string = 'bsc'
   private _isFarming: boolean
   private _calculatedReward: number = 0
   private _userDeposit: StakingUserDeposit = {
@@ -37,7 +39,7 @@ export class SeedifyLockedStakingDataFetcher extends SeedifyLockedStakingContrac
   }
 
   public get infos(): LockedStakingInfos {
-    return new LockedStakingInfos(this.stakedAmount, this.pendingAmount, this._rewardPerSec, this.calculatedReward, this._userDeposit.endTime, this._userDeposit.depositTime, this._lockDuration)
+    return new LockedStakingInfos(this.stakedAmount, this.pendingAmount, this._rewardPerSec, this.calculatedReward, this._userDeposit.endTime, this._userDeposit.depositTime, this._lockDuration, this.chainId || 1)
   }
 
   public get rewardToken(): Token {
@@ -87,10 +89,11 @@ export class SeedifyLockedStakingDataFetcher extends SeedifyLockedStakingContrac
 
   public toJSON(): JSON {
     return JSON.parse(JSON.stringify({
+      chain: getChainName(this.chainId),
       totalStaked: this.allStakedAmount,
       rewardToken: this.rewardToken.symbol,
       stakedToken: this.stakedToken.symbol,
-      lockDuration: this._lockDuration
+      lockDuration: this._lockDuration,
     }))
   }
 }

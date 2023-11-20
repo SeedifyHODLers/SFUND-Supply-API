@@ -1,47 +1,21 @@
+import {SeedifyLockedStakingPool} from "./Pools/SeedifyLockedStakingPool";
+
+require('dotenv').config()
 import debug from 'debug';
-import fastify from 'fastify';
-import Web3 from 'web3';
+import {configure, initializeWeb3, setupFastify, initializeServer, initializePools} from './utils';
 import { mcapRoute } from './MCap/mcapRoute';
-import { PoolManager } from './Pools/PoolManager';
-import { SeedifyLockedFarmingPool } from './Pools/SeedifyLockedFarmingPool';
-import { SeedifyLockedStakingPool } from './Pools/SeedifyLockedStakingPool';
 import { walletRoute } from './Wallets/walletRoute';
+import { PoolManager } from './Pools/PoolManager';
+import {SeedifyLockedFarmingPool} from "./Pools/SeedifyLockedFarmingPool";
+const config = configure();
 
-const app = fastify({ logger: true })
-const port = process.env.PORT || 3000;
+const app = setupFastify();
+
 const debugLog: debug.IDebugger = debug('app');
-const querystring = require('querystring')
 
-app.register(require('fastify-cors'), {
-  origin: true,
-  querystringParser: (str: string) => querystring.parse(str.toLowerCase())
-})
-
-
-const options = {
-  timeout: 30000, // ms
-
-  clientConfig: {
-    // Useful if requests are large
-    maxReceivedFrameSize: 100000000,   // bytes - default: 1MiB
-    maxReceivedMessageSize: 100000000, // bytes - default: 8MiB
-
-    // Useful to keep a connection alive
-    keepalive: true,
-    keepaliveInterval: -1 // ms
-  },
-
-  // Enable auto reconnection
-  reconnect: {
-    auto: true,
-    delay: 60000, // ms
-    onTimeout: false
-  }
-};
-
-const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443", options));
-const seedifyLockedPoolAddresses: string[] = [process.env.NEW_LOCKED_STAKING_270, process.env.NEW_LOCKED_STAKING_180, process.env.NEW_LOCKED_STAKING_90, process.env.NEW_LOCKED_STAKING_30, process.env.LOCKED_STAKING_SNFTS_14D, process.env.LOCKED_STAKING_SNFTS_30D, process.env.LOCKED_STAKING_SNFTS_60D, process.env.LOCKED_STAKING_SNFTS_90D, process.env.LOCKED_STAKING_SNFTS_180D, process.env.LOCKED_STAKING_7D, process.env.LOCKED_STAKING_14D, process.env.LOCKED_STAKING_30D, process.env.LOCKED_STAKING_60D, process.env.LOCKED_STAKING_90D, process.env.LOCKED_STAKING_180D].filter(addr => addr !== undefined) as string[]
-const seedifyLockedFarmPoolAddresses: string[] = [process.env.LOCKED_FARM_CAKE_LP_SNFTS, process.env.LOCKED_FARM_CAKE_LP].filter(addr => addr !== undefined) as string[]
+const web3BSC = initializeWeb3(config.bscNodeUrl)
+const web3ETH = initializeWeb3(config.ethNodeUrl)
+const web3ARB = initializeWeb3(config.arbNodeUrl)
 
 start().catch(e => console.warn(e))
 
@@ -49,31 +23,19 @@ async function start() {
   console.log("start")
   console.log("check node is listening")
   try {
-    if (await web3.eth.net.isListening()) {
+    if (await web3BSC.eth.net.isListening() && await web3ETH.eth.net.isListening()) {
       console.log("is listening")
-      for (let address of seedifyLockedPoolAddresses) {
-        console.log(`${address} : initialisation...`)
-        const stakingPool = new SeedifyLockedStakingPool(web3, address)
-        await stakingPool.init().then(() => PoolManager.addPool(stakingPool))
-        console.log(`${address} : ok`)
-      }
-      for (let address of seedifyLockedFarmPoolAddresses) {
-        console.log(`${address} : initialisation...`)
-        const stakingPool = new SeedifyLockedFarmingPool(web3, address)
-        await stakingPool.init().then(() => PoolManager.addPool(stakingPool))
-        console.log(`${address} : ok`)
-      }
+
+      await initializePools(web3BSC, config.StakingBSC, SeedifyLockedStakingPool, PoolManager);
+      await initializePools(web3BSC, config.FarmingBSC, SeedifyLockedFarmingPool, PoolManager);
+      await initializePools(web3ETH, config.StakingETH, SeedifyLockedStakingPool, PoolManager);
+      await initializePools(web3ETH, config.FarmingETH, SeedifyLockedFarmingPool, PoolManager);
+      await initializePools(web3ARB, config.StakingARB, SeedifyLockedStakingPool, PoolManager);
+      await initializePools(web3ARB, config.FarmingARB, SeedifyLockedFarmingPool, PoolManager);
 
       app.register(walletRoute)
       app.register(mcapRoute)
-
-      app.listen(port, '0.0.0.0', (err, address) => {
-        if (err) {
-          console.error(err)
-          process.exit(1)
-        }
-        console.log(`Server listening at ${address}`)
-      })
+      await initializeServer(app, Number(process.env.PORT || 3000));
     }
   } catch (e) {
     console.warn(e)
