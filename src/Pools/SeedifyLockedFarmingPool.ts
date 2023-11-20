@@ -1,9 +1,10 @@
-import Web3 from "web3";
 import { SeedifyLockedFarmingContract } from "../Contracts/SeedifyLockedFarmingContract";
 import { LPToken } from "../Wallets/LPToken";
 import { Token } from "../Wallets/Token";
 import { TokenManager } from "../Wallets/TokenManager";
 import { SeedifyLockedFarmingDataFetcher } from "./SeedifyLockedFarmingDataFetcher";
+import { SeedifyLockedFarmingDataFetcherETH } from "./SeedifyLockedFarmingDataFetcherETH";
+import type Web3 from "web3";
 
 export class SeedifyLockedFarmingPool extends SeedifyLockedFarmingContract {
   private _lockDuration!: number
@@ -14,7 +15,7 @@ export class SeedifyLockedFarmingPool extends SeedifyLockedFarmingContract {
     const works: Promise<any>[] = []
     const rewardTokenAddress = await this.rewardTokenAddress()
     this._lockDuration = (await this.getLockDuration()) * 60 * 60
-    const rewardToken = TokenManager.getToken(rewardTokenAddress)
+    const rewardToken = TokenManager.getToken(rewardTokenAddress, this.chainId)
     if (rewardToken === undefined) {
       this._rewardToken = new Token(this.web3, rewardTokenAddress)
       works.push(this._rewardToken.init().then(() => TokenManager.addToken(this._rewardToken)))
@@ -34,6 +35,7 @@ export class SeedifyLockedFarmingPool extends SeedifyLockedFarmingContract {
   }
 
   getDataFetcher(web3: Web3) {
-    return new SeedifyLockedFarmingDataFetcher(web3, this.contractAddress, this._stakingToken, this._rewardToken, this._lockDuration)
+    const DataFetcherClass = ["uni-v2", "cmlt-lp"].includes(this._stakingToken.symbol) ? SeedifyLockedFarmingDataFetcherETH : SeedifyLockedFarmingDataFetcher
+    return new DataFetcherClass(web3, this.contractAddress, this._stakingToken, this._rewardToken, this._lockDuration)
   }
 }

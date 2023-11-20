@@ -1,8 +1,8 @@
-import Web3 from "web3"
 import { AbiItem } from "web3-utils"
 import stackingPoolAbi from "../ABI/SeedifyLockedStakingPool.json"
 import { StakingUserDeposit } from "../Interfaces/StakingUserDeposit"
 import { Contract } from "./Contract"
+import type Web3 from "web3"
 
 export class SeedifyLockedStakingContract extends Contract {
 

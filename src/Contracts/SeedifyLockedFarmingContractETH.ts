@@ -1,17 +1,17 @@
 import { AbiItem } from "web3-utils"
-import stackingPoolAbi from "../ABI/SeedifyLockedFarmingPool.json"
+import stackingPoolAbi from "../ABI/SeedifyLockedFarmingPoolETH.json"
 import { FarmUserDeposit } from "../Interfaces/FarmUserDeposit"
 import { Contract } from "./Contract"
 import type Web3 from "web3"
 
-export class SeedifyLockedFarmingContract extends Contract {
+export class SeedifyLockedFarmingContractETH extends Contract {
 
   constructor(web3: Web3, contractAddress: string) {
     super(web3, contractAddress, stackingPoolAbi as AbiItem[])
   }
 
   async stakedBalance(): Promise<number> {
-    return this.contract.methods.stakedBalance().call()
+    return this.contract.methods.currentStakedBalance().call()
 
   }
   async rewardBalance(): Promise<number> {
@@ -19,7 +19,7 @@ export class SeedifyLockedFarmingContract extends Contract {
   }
 
   async stakedTotal(): Promise<number> {
-    return this.contract.methods.stakedTotal().call()
+    return this.contract.methods.totalStaked().call()
   }
 
   async getLockDuration(): Promise<number> {
@@ -43,15 +43,15 @@ export class SeedifyLockedFarmingContract extends Contract {
   }
 
   async blocksPerHour(): Promise<number> {
-    return this.contract.methods.blocksPerHour().call()
+    return this.contract.methods.SECONDS_PER_HOUR().call().catch(() => 0)
   }
 
   async rewPerBlock(): Promise<number> {
-    return this.contract.methods.rewPerBlock().call()
+    return this.contract.methods.rewPerSecond().call()
   }
 
   async currentBlock(): Promise<number> {
-    return this.contract.methods.currentBlock().call()
+    return 1;
   }
 
 }

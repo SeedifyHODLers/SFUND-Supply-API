@@ -6,7 +6,7 @@ export class StakingInfos extends PoolInfos {
     return JSON.parse(JSON.stringify({
       "tokens": Object.fromEntries(this.tokens.entries()),
       "pendingReward": Object.fromEntries(this.pendingReward.entries()),
-      "rewardPerSec": this.rewardPerSec
+      "rewardPerSec": this.rewardPerSec,
     }))
   }
 }

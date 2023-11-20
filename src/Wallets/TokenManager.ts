@@ -5,8 +5,8 @@ export class TokenManager {
   private static _tokens: Token[] = [];
   private static _lpTokens: LPToken[] = [];
 
-  static getToken(contractAddress: string): Token | undefined {
-    return this._tokens.find((token: Token) => token.contractAddress == contractAddress);
+  static getToken(contractAddress: string, chainId = 56): Token | undefined {
+    return this._tokens.find((token: Token) => token.contractAddress == contractAddress && token.chainId === chainId);
   }
 
   static getLPToken(lpContractAddress: string): LPToken | undefined {

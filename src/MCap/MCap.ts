@@ -1,10 +1,10 @@
-import Web3 from "web3";
 import { LockContract } from "../Contracts/LockContract";
 import { SeedifyLockedFarmingContract } from "../Contracts/SeedifyLockedFarmingContract";
 import { SeedifyLockedStakingContract } from "../Contracts/SeedifyLockedStakingContract";
 import { TokenContract } from "../Contracts/TokenContract";
 import client from '../DbConnector';
 import { EntityWallet } from "./EntityWallet";
+import type Web3 from "web3";
 
 export class MCap {
   public get circulatingSupply() {
@@ -12,6 +12,8 @@ export class MCap {
   }
   readonly burnAddresses = ["0x0000000000000000000000000000000000000000", "0x000000000000000000000000000000000000dEaD"]
   readonly exchangesWallets: EntityWallet[] = [
+    //new EntityWallet_1.EntityWallet("Uniswap V2", "0x8fb8e9921922d2ffb529a95d28a0d06d275d7a59"), ETH LP to be handled later
+    // new EntityWallet_1.EntityWallet("Camelot LP", "0x006a9eeed8160b470f2e10b12e7c9a4efe1f3157"), ARB LP to be handled later
     new EntityWallet("PancakeSwap V2", "0x74fA517715C4ec65EF01d55ad5335f90dce7CC87"),
     new EntityWallet("BakerySwap", "0x782f3f0d2b321d5ab7f15cd1665b95ec479dcfa5"),
     new EntityWallet("KuCoin", "0x4cf8800ccc0a56396f77b1e7c46160f5df0e09a5"),

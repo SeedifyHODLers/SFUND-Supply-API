@@ -1,4 +1,5 @@
-import { SeedifyLockedFarmingContract } from "../Contracts/SeedifyLockedFarmingContract"
+
+import { SeedifyLockedFarmingContractETH } from "../Contracts/SeedifyLockedFarmingContractETH"
 import { DataFetcher } from "../Interfaces/DataFetcher"
 import { FarmUserDeposit } from "../Interfaces/FarmUserDeposit"
 import { LPToken } from "../Wallets/LPToken"
@@ -7,7 +8,7 @@ import { LockedFarmingInfos } from "./LockedFarmingInfos"
 import { getChainName } from "../utils";
 import type Web3 from "web3"
 
-export class SeedifyLockedFarmingDataFetcher extends SeedifyLockedFarmingContract implements DataFetcher {
+export class SeedifyLockedFarmingDataFetcherETH extends SeedifyLockedFarmingContractETH implements DataFetcher {
 
   private _isFarming: boolean
   private _calculatedReward: number = 0

@@ -5,40 +5,21 @@ import { PoolManager } from '../Pools/PoolManager';
 import { LPToken } from './LPToken';
 import { TokenManager } from './TokenManager';
 import { Wallet } from './Wallet';
+import {initializeWeb3, configure} from "../utils";
 
-const options = {
-  timeout: 30000, // ms
-
-  clientConfig: {
-    // Useful if requests are large
-    maxReceivedFrameSize: 100000000,   // bytes - default: 1MiB
-    maxReceivedMessageSize: 100000000, // bytes - default: 8MiB
-
-    // Useful to keep a connection alive
-    keepalive: true,
-    keepaliveInterval: -1 // ms
-  },
-
-  // Enable auto reconnection
-  reconnect: {
-    auto: true,
-    delay: 60000, // ms
-    onTimeout: false
-  }
-};
+const config = configure();
 
 export const walletRoute: FastifyPluginAsync = async (server: FastifyInstance) => {
   server.get('/wallet/:addr', {}, async (req: FastifyRequest<{ Params: { addr: string }; }>, reply: FastifyReply) => {
     try {
       if (Web3.utils.isAddress(req.params.addr)) {
-        const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443", options));
-        const isListening = await web3.eth.net.isListening()
-        if (isListening) {
-          const wallet = new Wallet(req.params.addr, PoolManager.getAll().map(pool => pool.getDataFetcher(web3)))
+          const wallet = new Wallet(
+              req.params.addr,
+              PoolManager.getAll().map(pool => pool.getDataFetcher(pool.web3))
+          )
           await wallet.initPools()
           await wallet.fetchInfos()
           reply.code(200).send(wallet.infosAsJson());
-        }
       }
       else {
         throw new Error("Invalid address")
@@ -62,7 +43,14 @@ export const walletRoute: FastifyPluginAsync = async (server: FastifyInstance) =
 
   server.get('/lp/:addr', {}, async (req: FastifyRequest<{ Params: { addr: string }; }>, reply: FastifyReply) => {
     try {
-      const web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed1.binance.org:443", options));
+      const config = configure();
+      let targetConfig;
+      switch (req.params.addr) {
+        case process.env.ETH_UNI_LP: targetConfig = config.ethNodeUrl; break;
+        case process.env.ARB_CMLT_LP: targetConfig = config.arbNodeUrl; break;
+        default: targetConfig = config.bscNodeUrl; break;
+      }
+      const web3 = initializeWeb3(targetConfig)
       if (web3.utils.isAddress(req.params.addr)) {
         let lpToken = TokenManager.getLPToken(req.params.addr)
         if (lpToken === undefined) {

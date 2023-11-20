@@ -7,7 +7,7 @@ export class Token extends TokenContract {
   public async init(): Promise<void> {
     await Promise.all([
       this.getSymbol().then((symbol) => this._symbol = symbol.toLowerCase()),
-      this.getDecimals().then((decimals) => this._decimals = decimals)
+      this.getDecimals().then((decimals) => this._decimals = decimals),
     ])
   }
 

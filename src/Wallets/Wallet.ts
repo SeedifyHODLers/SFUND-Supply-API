@@ -4,6 +4,7 @@ import { LockedFarmingInfos } from "../Pools/LockedFarmingInfos"
 import { PoolInfos } from "../Pools/PoolInfos"
 import { StakingInfos } from "../Pools/StakingInfos"
 import { Token } from "./Token"
+import {getChainName} from "../utils";
 
 export class Wallet {
 
@@ -26,9 +27,10 @@ export class Wallet {
   fetchInfos = async (): Promise<void> => {
     this._pools.forEach((pool: DataFetcher) => {
       const poolInfos = pool.infos
-      pool.stakedAmount.forEach((amount: number, symbol: string) => {
+      pool.stakedAmount.forEach((amount: number, symbolWithNetwork: string) => {
+        const symbol = symbolWithNetwork.split('-')[0]
         this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
-        if (pool.isLocked && symbol.toLowerCase() == 'sfund') {
+        if (pool.isLocked && symbol.toLowerCase() === 'sfund') {
           this._total_eligible += amount
         }
         if (poolInfos instanceof FarmInfos || poolInfos instanceof LockedFarmingInfos) {
@@ -38,7 +40,8 @@ export class Wallet {
           this._stakingTotal.set(symbol, (this._stakingTotal.get(symbol) || 0) + amount)
         }
       })
-      pool.pendingAmount.forEach((amount: number, symbol: string) => {
+      pool.pendingAmount.forEach((amount: number, symbolWithNetwork: string) => {
+        const symbol = symbolWithNetwork.split('-')[0]
         this._total.set(symbol, (this._total.get(symbol) || 0) + amount)
         if (poolInfos instanceof FarmInfos || poolInfos instanceof LockedFarmingInfos) {
           this._farmTotal.set(symbol, (this._farmTotal.get(symbol) || 0) + amount)
@@ -47,7 +50,11 @@ export class Wallet {
           this._stakingTotal.set(symbol, (this._stakingTotal.get(symbol) || 0) + amount)
         }
       })
-      this._rewardTokens.set(pool.rewardToken.symbol, pool.rewardToken)
+      // @ts-ignore
+      const key = pool.rewardToken.symbol + '-' + getChainName(pool.web3.eth.currentProvider.host ?? '');
+      if(!this._rewardTokens.has(key)) {
+        this._rewardTokens.set(key, pool.rewardToken)
+      }
       this._poolInfos.push(pool.infos)
     })
     await this.getInWallet()
@@ -77,6 +84,8 @@ export class Wallet {
       works.push(token.getBalanceOf(this._walletAddress).then(amount => {
         const realAmount = (amount / token.decimals) > 1e-6 ? (amount / token.decimals) : 0
         this._inWallet.set(symbol, (this._inWallet.get(symbol) || 0) + realAmount)
+        const symbolWithoutNetwork = symbol.split('-')[0]
+        this._inWallet.set(symbolWithoutNetwork, (this._inWallet.get(symbolWithoutNetwork) || 0) + realAmount)
         this._total.set(symbol, (this._total.get(symbol) || 0) + realAmount)
       }))
     }
