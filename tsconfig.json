@@ -7,6 +7,6 @@
     "esModuleInterop": true,
     "inlineSourceMap": true,
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   }
 }
