@@ -14,8 +14,6 @@ export abstract class Contract {
     return this._contract;
   }
 
-
-
   protected get abi(): AbiItem[] {
     return this._abi;
   }
