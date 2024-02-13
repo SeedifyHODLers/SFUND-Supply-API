@@ -8,4 +8,5 @@ export interface PoolBase {
 
   get web3(): Web3
   get contractAddress(): string
+  get chainId(): number | undefined
 }
