@@ -7,7 +7,7 @@ import {TokenManager} from './TokenManager';
 import {Wallet} from './Wallet';
 import {initializeWeb3, configure, getChainName} from "../utils";
 import fastq from 'fastq';
-
+import NodeCache  from "node-cache";
 const config = configure();
 
 
@@ -19,15 +19,22 @@ let queue = fastq.promise(async (task) => {
     }
 }, 1);
 
+const cache = new NodeCache();
+
 const sleep = (delay: number) => new Promise((resolve) => setTimeout(resolve, delay))
 
 export const walletRoute: FastifyPluginAsync = async (server: FastifyInstance) => {
 
     server.get('/wallet/:addr', {}, async (req: FastifyRequest<{ Params: { addr: string }; }>, reply: FastifyReply) => {
-        queue.push(async () => {
+        await queue.push(async () => {
             console.log(`Fetching wallet for ${req.params.addr}`)
             try {
                 if (Web3.utils.isAddress(req.params.addr)) {
+                    const cached = cache.get(req.params.addr);
+                    if (cached) {
+                        console.log('Cache hit')
+                        return reply.code(200).send(cached);
+                    }
 
                     // const fetchers = {
                     //   BSC: initializeWeb3(config.bscNodeUrl),
@@ -47,6 +54,7 @@ export const walletRoute: FastifyPluginAsync = async (server: FastifyInstance) =
                         )
                         await wallet.initPools()
                         await wallet.fetchInfos()
+                        cache.set(req.params.addr, wallet.infosAsJson(), 60 * 5);
                         reply.code(200).send(wallet.infosAsJson())
                         await sleep(1000);
                     }
@@ -69,8 +77,13 @@ export const walletRoute: FastifyPluginAsync = async (server: FastifyInstance) =
     })
 
     server.get('/lp/:addr', {}, async (req: FastifyRequest<{ Params: { addr: string }; }>, reply: FastifyReply) => {
-        queue.push(async () => {
+        await queue.push(async () => {
             try {
+                const cached = cache.get(`lp-${req.params.addr}`);
+                if (cached) {
+                    console.log('LP Cache hit')
+                    return reply.code(200).send(cached);
+                }
                 const config = configure();
                 let targetConfig;
                 switch (req.params.addr) {
@@ -92,6 +105,7 @@ export const walletRoute: FastifyPluginAsync = async (server: FastifyInstance) =
                         await lpToken.init()
                     }
                     await lpToken.fetchInfos()
+                    cache.set(`lp-${req.params.addr}`, lpToken.infosAsJson(), 60 * 5);
                     return reply.code(200).send(lpToken.infosAsJson());
                 } else {
                     throw new Error("Invalid address")
